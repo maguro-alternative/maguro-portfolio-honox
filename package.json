@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@types/noisejs": "^2.1.0",
-    "hono": "^4.7.8"
+    "hono": "^4.7.8",
+    "honox": "^0.1.40"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^0.1.15",
