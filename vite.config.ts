@@ -1,25 +1,29 @@
-import { cloudflare } from '@cloudflare/vite-plugin'
 import build from '@hono/vite-build/cloudflare-workers'
+import adapter from '@hono/vite-dev-server/cloudflare'
+import tailwindcss from '@tailwindcss/vite'
+import honox from 'honox/vite'
 import { defineConfig } from 'vite'
-import ssrHotReload from 'vite-plugin-ssr-hot-reload'
 
-export default defineConfig(({ command, isSsrBuild }) => {
-  if (command === 'serve') {
-    return { plugins: [ssrHotReload(), cloudflare()] }
-  }
-  if (!isSsrBuild) {
+export default defineConfig(({ mode }) => {
+  if (mode === "client") {
     return {
       build: {
+        manifest: true,
         rollupOptions: {
-          input: ['./src/style.css'],
-          output: {
-            assetFileNames: 'assets/[name].[ext]'
-          }
-        }
-      }
-    }
+          input: ["./app/style.css", "./app/client.ts"],
+        },
+      },
+      plugins: [tailwindcss()],
+    };
   }
   return {
-    plugins: [build({ outputDir: 'dist-server' })]
+    plugins: [
+      honox({
+        devServer: { adapter },
+        client: { input: ['./app/style.css'] }
+      }),
+      tailwindcss(),
+      build()
+    ]
   }
 })
