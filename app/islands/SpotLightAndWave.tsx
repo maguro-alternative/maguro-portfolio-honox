@@ -50,21 +50,21 @@ export default function SpotlightAndWave() {
     };
   }, [canvasWaveRef, canvasOverlayRef]);
 
-    const canvasStyle = { position: "fixed", top: 0, left: 0, width: "100%", height: "100%" };
+  const canvasStyle = { position: "fixed", top: 0, left: 0, width: "100%", height: "100%" };
 
-    return (
-        <>
-            <div id="bg" style={{ ...canvasStyle, zIndex: -2, background: "linear-gradient(to bottom, hsl(145, 33%, 48%),hsl(152, 21%, 54%),hsl(175, 20%, 53%))", animation: "AnimationName 10s ease infinite" }}></div>
-            <canvas
-                id="canvasWave"
-                ref={canvasWaveRef}
-                style={{ ...canvasStyle, zIndex: -3 }}
-            />
-            <canvas
-                id="canvasOverlay"
-                ref={canvasOverlayRef}
-                style={{ ...canvasStyle, zIndex: -1, mixBlendMode: "hard-light" }}
-            />
-        </>
-    );
+  return (
+      <>
+          <div id="bg" style={{ ...canvasStyle, zIndex: -2, background: "linear-gradient(to bottom, hsl(145, 33%, 48%),hsl(152, 21%, 54%),hsl(175, 20%, 53%))", animation: "AnimationName 10s ease infinite" }}></div>
+          <canvas
+              id="canvasWave"
+              ref={canvasWaveRef}
+              style={{ ...canvasStyle, zIndex: -3 }}
+          />
+          <canvas
+              id="canvasOverlay"
+              ref={canvasOverlayRef}
+              style={{ ...canvasStyle, zIndex: -1, mixBlendMode: "hard-light" }}
+          />
+      </>
+  );
 };
