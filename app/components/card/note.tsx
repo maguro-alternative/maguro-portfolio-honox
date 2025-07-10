@@ -1,0 +1,4 @@
+type Props = {
+  id: string
+}
+
