@@ -19,14 +19,6 @@ export default function SnowContainer() {
             //value_area: 800
           }
         },
-        /*shape: {
-          type: "image",
-          options: {
-            image: {
-              src: "https://kakechimaru.com/wp-content/themes/kakechimaru/image/snow_particlesjs.png"
-            }
-          }
-        },*/
         color: {
             value: "#F4F4F4",
         },
