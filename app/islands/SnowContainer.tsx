@@ -16,7 +16,6 @@ export default function SnowContainer() {
           value: 150,
           density: {
             enable: true,
-            //value_area: 800
           }
         },
         color: {
