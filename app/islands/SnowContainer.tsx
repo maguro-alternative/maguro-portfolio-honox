@@ -28,7 +28,6 @@ export default function SnowContainer() {
         },
         opacity: {
           value: { min: 0.3, max: 0.8 },  // 透明度もランダムに
-          //random: false,
           animation: {
             enable: false,
             speed: 1,
