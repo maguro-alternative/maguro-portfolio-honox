@@ -7,7 +7,6 @@ export default function SpotlightAndWave() {
   const canvasOverlayRef = useRef<HTMLCanvasElement>(null);
 
   useLayoutEffect(() => {
-    console.log("effect");
     const canvasWave = canvasWaveRef.current;
     const canvasOverlay = canvasOverlayRef.current;
 
