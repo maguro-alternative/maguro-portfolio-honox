@@ -14,11 +14,14 @@ export default createRoute(async (c) => {
   const selectedBackground = backgroundImages[randomIndex];
 
   return c.render(
-    <div style={{ backgroundImage: `url('${selectedBackground}')`, backgroundSize: 'cover', height: '100vh', overflow: 'hidden'}}>
-      <div class="snow-container" style={{ position: 'relative', zIndex: 1 }}>
-          <div class="snow small"><span>❄</span></div>
-          <div class="snow medium"><span>❄</span></div>
-          <div class="snow large"><span>❄</span></div>
+    <div
+      className="h-screen overflow-hidden bg-cover"
+      style={{ backgroundImage: `url('${selectedBackground}')` }}
+    >
+      <div className="flex position-fixed w-full h-full relative snow-container">
+          <div className="snow small"><span>❄</span></div>
+          <div className="snow medium"><span>❄</span></div>
+          <div className="snow large"><span>❄</span></div>
       </div>
       <SnowContainer />
     </div>
