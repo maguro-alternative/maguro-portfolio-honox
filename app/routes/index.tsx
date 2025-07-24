@@ -7,29 +7,29 @@ import SpotlightAndWave from '../islands/SpotLightAndWave';
 
 export default createRoute(async (c) => {
   return c.render(
-    <div className="container">
+    <div className="container mx-auto">
       <SpotlightAndWave />
-      <div className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
-        <div style={{ display: 'flex', gap: '20px' }}>
-          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>
+      <div className="flex md:flex-row justify-between items-center p-2">
+        <div className="flex gap-5 mb-2.5 md:mb-0 p-2 text-white">
+          <a href="#" className="no-underline">
             Home
           </a>
-          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>
+          <a href="#" className="no-underline">
             About
           </a>
-          <a href="#" style={{ color: 'white', textDecoration: 'none' }}>
+          <a href="#" className="no-underline">
             Contact
           </a>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div className="flex items-center">
           <Twitter id="sigumataityouda" />
           <Github id="maguro-alternative" />
         </div>
       </div>
-      <div className="card" style={{ color: 'white', maxWidth: '80%', margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px' }}>
-          <div>
-            <h1>ユニコォォォォォォォォォォォォォォォォォーーーーーーーーーン！！！</h1>
+      <div className="text-white max-w-4/5 mx-auto">
+        <div className="flex md:flex-row justify-center items-center mb-5">
+          <div className="md:w-1/2">
+            <h1 className="text-4xl">ユニコォォォォォォォォォォォォォォォォォーーーーーーーーーン！！！</h1>
             <p>
               This is a sample application built with Honox, showcasing the use of islands and components.
             </p>
@@ -37,12 +37,12 @@ export default createRoute(async (c) => {
               Explore the code and see how you can create interactive web applications with ease!
             </p>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px' }}>
+          <div className="flex justify-center items-center mb-5 md:w-1/2">
             <Uchuemon />
           </div>
         </div>
       </div>
-      <div className="footer" style={{ textAlign: 'center', padding: '20px', color: 'white' }}>
+      <div className="text-center p-5 text-white">
         <p>© 2025 Maguro Alternative. All rights reserved.</p>
       </div>
     </div>
