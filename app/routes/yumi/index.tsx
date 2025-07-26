@@ -19,9 +19,9 @@ export default createRoute(async (c) => {
       style={{ backgroundImage: `url('${selectedBackground}')` }}
     >
       <div className="flex position-fixed w-full h-full relative snow-container">
-          <div className="snow small"><span>❄</span></div>
-          <div className="snow medium"><span>❄</span></div>
-          <div className="snow large"><span>❄</span></div>
+        <div className="snow small"><span>❄</span></div>
+        <div className="snow medium"><span>❄</span></div>
+        <div className="snow large"><span>❄</span></div>
       </div>
       <SnowContainer />
     </div>
