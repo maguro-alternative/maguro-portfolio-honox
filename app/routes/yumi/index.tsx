@@ -18,10 +18,16 @@ export default createRoute(async (c) => {
       className="h-screen overflow-hidden bg-cover"
       style={{ backgroundImage: `url('${selectedBackground}')` }}
     >
-      <div className="flex position-fixed w-full h-full relative snow-container">
-        <div className="snow small"><span>❄</span></div>
-        <div className="snow medium"><span>❄</span></div>
-        <div className="snow large"><span>❄</span></div>
+      <div className="flex fixed w-full h-full snow-container">
+        <div className="absolute w-full h-full color-snow text-center before:content-['❄'] before:left-[-30%] before:animate-fall-small-9 after:content-['❄'] after:left-[30%] after:animate-fall-small-9">
+          <span className="block animate-fall-small-13">❄</span>
+        </div>
+        <div className="snow before:content-['❄'] before:left-[-40%] before:animate-fall-medium-10 after:content-['❄'] after:left-[40%] after:animate-fall-medium-6">
+          <span className="block animate-fall-medium-8 left-[10%]">❄</span>
+        </div>
+        <div className="snow before:content-['❄'] before:left-[-35%] before:animate-fall-large-6 after:content-['❄'] after:left-[35%] after:animate-fall-large-7">
+          <span className="block animate-fall-large-5 left-[-10%]">❄</span>
+        </div>
       </div>
       <SnowContainer />
     </div>
