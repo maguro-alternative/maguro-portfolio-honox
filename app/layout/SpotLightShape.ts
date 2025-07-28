@@ -1,7 +1,7 @@
 export function drawSpotLight(
-    context: CanvasRenderingContext2D,
-    w: number,
-    h: number
+  context: CanvasRenderingContext2D,
+  w: number,
+  h: number
 ): void {
     // 1個目の円
     const dx: number = w / 3 + (w / 10) * Math.sin(Date.now() / 4000);
