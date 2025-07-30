@@ -23,15 +23,15 @@ function drawCircle(
   size: number,
   color: string
 ): void {
-    // グラデーションの指定
-    const gradient: CanvasGradient = context.createRadialGradient(dx, dy, 0, dx, dy, size);
-    gradient.addColorStop(0, color);
-    gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+  // グラデーションの指定
+  const gradient: CanvasGradient = context.createRadialGradient(dx, dy, 0, dx, dy, size);
+  gradient.addColorStop(0, color);
+  gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
 
-    // 円を描く
-    context.fillStyle = gradient;
-    context.beginPath();
-    context.arc(dx, dy, size, 0, Math.PI * 2);
-    context.closePath();
-    context.fill();
+  // 円を描く
+  context.fillStyle = gradient;
+  context.beginPath();
+  context.arc(dx, dy, size, 0, Math.PI * 2);
+  context.closePath();
+  context.fill();
 }
