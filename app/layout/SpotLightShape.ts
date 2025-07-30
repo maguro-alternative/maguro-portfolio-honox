@@ -17,11 +17,11 @@ export function drawSpotLight(
 }
 
 function drawCircle(
-    context: CanvasRenderingContext2D,
-    dx: number,
-    dy: number,
-    size: number,
-    color: string
+  context: CanvasRenderingContext2D,
+  dx: number,
+  dy: number,
+  size: number,
+  color: string
 ): void {
     // グラデーションの指定
     const gradient: CanvasGradient = context.createRadialGradient(dx, dy, 0, dx, dy, size);
