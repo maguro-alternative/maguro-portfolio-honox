@@ -3,12 +3,12 @@ import { noise } from "./lib/perlin";
 noise.seed(Math.random());
 
 export function drawWave(
-    context: CanvasRenderingContext2D,
-    w: number,
-    h: number,
-    vertexNum: number = 10,
-    maxVertex: number = 5,
-    debugMode: boolean = false
+  context: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  vertexNum: number = 10,
+  maxVertex: number = 5,
+  debugMode: boolean = false
 ): void {
     // 曲線を描き直す
     for (let i = 0; i < vertexNum; i++) {
