@@ -55,9 +55,9 @@ export default function SpotlightAndWave() {
     <>
       <div id="bg" style={{ ...canvasStyle, zIndex: -2, background: "linear-gradient(to bottom, hsl(145, 33%, 48%),hsl(152, 21%, 54%),hsl(175, 20%, 53%))", animation: "AnimationName 10s ease infinite" }}></div>
       <canvas
-          id="canvasWave"
-          ref={canvasWaveRef}
-          style={{ ...canvasStyle, zIndex: -3 }}
+        id="canvasWave"
+        ref={canvasWaveRef}
+        style={{ ...canvasStyle, zIndex: -3 }}
       />
       <canvas
           id="canvasOverlay"
