@@ -1,6 +1,6 @@
 import { drawWave } from "../layout/WaveShape";
 import { drawSpotLight } from "../layout/SpotLightShape";
-import { useRef, useLayoutEffect } from "hono/jsx";
+import { useRef, useLayoutEffect, useSyncExternalStore } from "hono/jsx";
 
 export default function SpotlightAndWave() {
   const canvasWaveRef = useRef<HTMLCanvasElement>(null);
