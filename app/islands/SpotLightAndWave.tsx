@@ -60,9 +60,9 @@ export default function SpotlightAndWave() {
         style={{ ...canvasStyle, zIndex: -3 }}
       />
       <canvas
-          id="canvasOverlay"
-          ref={canvasOverlayRef}
-          style={{ ...canvasStyle, zIndex: -1, mixBlendMode: "hard-light" }}
+        id="canvasOverlay"
+        ref={canvasOverlayRef}
+        style={{ ...canvasStyle, zIndex: -1, mixBlendMode: "hard-light" }}
       />
     </>
   );
