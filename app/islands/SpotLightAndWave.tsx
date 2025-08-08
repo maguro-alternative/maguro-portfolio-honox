@@ -2,9 +2,38 @@ import { drawWave } from "../layout/WaveShape";
 import { drawSpotLight } from "../layout/SpotLightShape";
 import { useRef, useLayoutEffect, useSyncExternalStore } from "hono/jsx";
 
+const isClient = typeof window !== 'undefined';
+
+function resizeSubscribe(callback: () => void) {
+  if (!isClient) {
+    return () => {};
+  }
+  window.addEventListener("resize", callback);
+  return () => window.removeEventListener("resize", callback);
+}
+
+function useResizeEffect() {
+  const getSnapshot = () => {
+    return {
+      width: isClient ? window.innerWidth : 0,
+      height: isClient ? window.innerHeight : 0,
+    };
+  };
+
+  const getServerSnapshot = () => {
+    return {
+      width: 0,
+      height: 0,
+    };
+  };
+
+  return useSyncExternalStore(resizeSubscribe, getSnapshot, getServerSnapshot);
+}
+
 export default function SpotlightAndWave() {
   const canvasWaveRef = useRef<HTMLCanvasElement>(null);
   const canvasOverlayRef = useRef<HTMLCanvasElement>(null);
+  const { width, height } = useResizeEffect();
 
   useLayoutEffect(() => {
     const canvasWave = canvasWaveRef.current;
@@ -17,18 +46,18 @@ export default function SpotlightAndWave() {
 
     if (!contextWave || !contextOverlay) return;
 
-    const handleResize = () => {
-      canvasWave.width = window.innerWidth;
-      canvasWave.height = window.innerHeight;
-      canvasOverlay.width = window.innerWidth;
-      canvasOverlay.height = window.innerHeight;
-    };
+    canvasWave.width = width;
+    canvasWave.height = height;
+    canvasOverlay.width = width;
+    canvasOverlay.height = height;
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
+    if (width === 0 || height === 0) {
+      return;
+    }
 
+    let animationFrameId: number;
     const tick = () => {
-      requestAnimationFrame(tick);
+      animationFrameId = requestAnimationFrame(tick);
 
       contextWave.fillStyle = "rgba(0, 0, 0, 0.2)";
       contextWave.fillRect(0, 0, canvasWave.width, canvasWave.height);
@@ -45,9 +74,9 @@ export default function SpotlightAndWave() {
     tick();
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(animationFrameId);
     };
-  }, [canvasWaveRef, canvasOverlayRef]);
+  }, [canvasWaveRef, canvasOverlayRef, width, height]);
 
   const canvasStyle = { position: "fixed", top: 0, left: 0, width: "100%", height: "100%" };
 
