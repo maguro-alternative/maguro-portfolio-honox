@@ -1,6 +1,5 @@
-import { useEffect } from "hono/jsx";
 import configs from "@tsparticles/configs";
-import { animate, type ISourceOptions } from "@tsparticles/engine";
+import { type ISourceOptions } from "@tsparticles/engine";
 
 export default function SnowContainer() {
   const config:ISourceOptions = {
