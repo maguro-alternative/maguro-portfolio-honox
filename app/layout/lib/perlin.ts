@@ -1,15 +1,15 @@
 // A TypeScript conversion of perlin.js
 
 export class Grad {
-    constructor(public x: number, public y: number, public z: number) {}
+  constructor(public x: number, public y: number, public z: number) {}
 
-    dot2(x: number, y: number): number {
-        return this.x * x + this.y * y;
-    }
+  dot2(x: number, y: number): number {
+      return this.x * x + this.y * y;
+  }
 
-    dot3(x: number, y: number, z: number): number {
-        return this.x * x + this.y * y + this.z * z;
-    }
+  dot3(x: number, y: number, z: number): number {
+      return this.x * x + this.y * y + this.z * z;
+  }
 }
 
 const grad3: Grad[] = [
