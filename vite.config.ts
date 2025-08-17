@@ -1,4 +1,4 @@
-import build from '@hono/vite-build'
+import vercel from '@hono/vite-build'
 import adapter from '@hono/vite-dev-server/cloudflare'
 import tailwindcss from '@tailwindcss/vite'
 import honox from 'honox/vite'
@@ -13,7 +13,9 @@ export default defineConfig(({ mode }) => {
           input: ["./app/style.css", "./app/client.ts"],
         },
       },
-      plugins: [tailwindcss()],
+      plugins: [
+        tailwindcss()
+      ],
     };
   }
   return {
@@ -23,7 +25,7 @@ export default defineConfig(({ mode }) => {
         client: { input: ['./app/style.css'] }
       }),
       tailwindcss(),
-      build({})
+      vercel({})
     ]
   }
 })
