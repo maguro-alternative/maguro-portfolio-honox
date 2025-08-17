@@ -1,7 +1,7 @@
 {
   "functions": {
     "app/server.ts": {
-      "runtime": "@vercel/node@22.x"
+      "runtime": "nodejs22.x"
     }
   },
   "rewrites": [
