@@ -5,7 +5,7 @@
     "dev": "vite",
     "build": "vite build --mode client && vite build",
     "preview": "wrangler dev",
-    "deploy": "vercel"
+    "deploy": "npm run build && wrangler deploy"
   },
   "private": true,
   "dependencies": {
@@ -22,5 +22,8 @@
     "@tailwindcss/vite": "^4.1.11",
     "vite": "^6.1.1",
     "wrangler": "^4.4.0"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }
