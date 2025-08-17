@@ -2,8 +2,10 @@
   "name": "basic",
   "type": "module",
   "scripts": {
-    "start": "vercel dev",
-    "deploy": "vercel"
+    "dev": "vite",
+    "build": "vite build && vite build --ssr",
+    "preview": "wrangler dev",
+    "deploy": "npm run build && wrangler deploy"
   },
   "private": true,
   "dependencies": {
