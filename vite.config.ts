@@ -26,12 +26,7 @@ export default defineConfig(({ mode }) => {
         },
       }),
       tailwindcss(),
-      vercel({
-        entry: ['./app/server.ts'],
-        external: ['hono', 'hono/dev', 'hono/vite-build', 'honox/server'],
-        minify: true,
-        emptyOutDir: true,
-      }),
+      vercel({ entry: './app/server.ts' }),
     ],
   }
 })
