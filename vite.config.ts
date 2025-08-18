@@ -3,6 +3,7 @@ import adapter from '@hono/vite-dev-server/node'
 import tailwindcss from '@tailwindcss/vite'
 import honox from 'honox/vite'
 import { defineConfig } from 'vite'
+import nodeServerPlugin from './vite-node-server-plugin'
 
 export default defineConfig(({ mode }) => {
   if (mode === 'client') {
@@ -25,6 +26,7 @@ export default defineConfig(({ mode }) => {
           adapter,
         },
       }),
+      nodeServerPlugin(),
       tailwindcss(),
       vercel({
         entry: ['./app/server.ts'],
