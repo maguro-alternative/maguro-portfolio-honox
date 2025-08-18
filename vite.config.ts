@@ -1,32 +1,37 @@
 import vercel from '@hono/vite-build'
-import adapter from '@hono/vite-dev-server/cloudflare'
+import adapter from '@hono/vite-dev-server/node'
 import tailwindcss from '@tailwindcss/vite'
 import honox from 'honox/vite'
 import { defineConfig } from 'vite'
 
 export default defineConfig(({ mode }) => {
-  if (mode === "client") {
+  if (mode === 'client') {
     return {
       build: {
-        manifest: true,
         rollupOptions: {
-          input: ["./app/style.css", "./app/client.ts"],
+          input: ['/app/client.ts', '/app/style.css'],
+          manifest: true,
         },
+        outDir: './dist/static',
       },
-      plugins: [
-        tailwindcss(),
-        vercel({})
-      ],
-    };
+      plugins: [tailwindcss()],
+    }
   }
+
   return {
     plugins: [
       honox({
-        devServer: { adapter },
-        client: { input: ['./app/style.css'] }
+        devServer: {
+          adapter,
+        },
       }),
       tailwindcss(),
-      vercel({})
-    ]
+      vercel({
+        entry: ['./app/server.ts'],
+        external: ['hono', 'hono/dev', 'hono/vite-build', 'honox/server'],
+        minify: true,
+        emptyOutDir: true,
+      }),
+    ],
   }
 })
