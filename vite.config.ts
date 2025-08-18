@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
+      tailwindcss(),
       build({
         entry: './app/server.ts',
       })
