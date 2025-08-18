@@ -22,6 +22,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
+      honox({
+        devServer: {
+          adapter,
+        },
+      }),
       tailwindcss(),
       build({
         entry: './app/server.ts',
