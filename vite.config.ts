@@ -14,7 +14,8 @@ export default defineConfig(({ mode }) => {
         },
       },
       plugins: [
-        tailwindcss()
+        tailwindcss(),
+        vercel({})
       ],
     };
   }
