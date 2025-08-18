@@ -28,8 +28,6 @@ export default defineConfig(({ mode }) => {
       }),
       nodeServerPlugin(),
       tailwindcss(),
-      vercel({
-      }),
     ],
   }
 })
