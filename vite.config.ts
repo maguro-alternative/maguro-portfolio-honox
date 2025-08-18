@@ -1,4 +1,5 @@
 import vercel from '@hono/vite-build'
+import mdx from '@mdx-js/rollup'
 import adapter from '@hono/vite-dev-server/node'
 import tailwindcss from '@tailwindcss/vite'
 import honox from 'honox/vite'
@@ -28,6 +29,7 @@ export default defineConfig(({ mode }) => {
       }),
       nodeServerPlugin(),
       tailwindcss(),
+      mdx({ jsxImportSource: 'hono/jsx' }),
     ],
   }
 })
