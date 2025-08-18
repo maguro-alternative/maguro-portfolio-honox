@@ -49,7 +49,7 @@ export const nodeServerPlugin = (): Plugin => {
             external: [...builtinModules, /^node:/],
             input: virtualEntryId,
             output: {
-              entryFileNames: './app/server.ts',
+              entryFileNames: 'server.js',
             },
           },
         },
