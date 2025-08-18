@@ -28,6 +28,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       honox({
+        client: {
+          input: ['/app/client.ts', '/app/style.css'],
+        },
         devServer: {
           adapter,
         },
