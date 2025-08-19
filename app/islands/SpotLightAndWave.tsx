@@ -1,6 +1,6 @@
 import { drawWave } from "../layout/WaveShape";
 import { drawSpotLight } from "../layout/SpotLightShape";
-import { useRef, useLayoutEffect, useSyncExternalStore, type RefObject } from "hono/jsx";
+import { useRef, useSyncExternalStore, type RefObject } from "hono/jsx";
 
 const isClient = typeof window !== 'undefined';
 
