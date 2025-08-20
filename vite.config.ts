@@ -12,8 +12,8 @@ export default defineConfig(({ mode }) => {
       build: {
         rollupOptions: {
           input: ['/app/client.ts', '/app/style.css'],
-          manifest: true,
         },
+        manifest: true,
         outDir: './dist/static',
       },
       plugins: [
