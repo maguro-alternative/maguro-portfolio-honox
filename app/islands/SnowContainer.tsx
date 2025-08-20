@@ -84,9 +84,6 @@ export default function SnowContainer() {
     },
     retina_detect: true
   }
-  const keys = Object.keys(configs),
-  randomKey = keys[Math.floor(Math.random() * keys.length)] as keyof typeof configs,
-  options = configs["snow"];
 
   const initParticles = async () => {
     try {
