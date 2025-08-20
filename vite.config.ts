@@ -17,6 +17,14 @@ export default defineConfig(({ mode }) => {
         outDir: './dist/static',
       },
       plugins: [
+        honox({
+          client: {
+            input: ['/app/client.ts', '/app/style.css'],
+          },
+          devServer: {
+            adapter,
+          },
+        }),
         tailwindcss(),
         build({
           entry: './app/client.ts',
@@ -27,14 +35,6 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
-      honox({
-        client: {
-          input: ['/app/client.ts', '/app/style.css'],
-        },
-        devServer: {
-          adapter,
-        },
-      }),
       tailwindcss(),
       build({
         entry: './app/server.ts',
