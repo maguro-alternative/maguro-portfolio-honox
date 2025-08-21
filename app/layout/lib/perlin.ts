@@ -4,7 +4,7 @@ export class Grad {
   constructor(public x: number, public y: number, public z: number) {}
 
   dot2(x: number, y: number): number {
-      return this.x * x + this.y * y;
+    return this.x * x + this.y * y;
   }
 
   dot3(x: number, y: number, z: number): number {
