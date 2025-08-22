@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 import honox from 'honox/vite'
 import { defineConfig } from 'vite'
 import nodeServerPlugin from './vite-node-server-plugin'
+import vercel from 'vite-plugin-vercel';
 
 export default defineConfig(({ mode }) => {
   if (mode === 'client') {
@@ -28,7 +29,7 @@ export default defineConfig(({ mode }) => {
         client: { input: ['./app/style.css'] }
       }),
       tailwindcss(),
-      build()
+      vercel()
     ],
   }
 })
