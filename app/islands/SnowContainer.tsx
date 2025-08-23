@@ -24,7 +24,6 @@ export default function SnowContainer() {
           enable: false,
           speed: 1,
           destroy: "min",
-          //opacityMin: 0.1,
           sync: false
         }
       },
