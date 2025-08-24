@@ -47,7 +47,6 @@ export default function SnowContainer() {
         random: true,
         straight: false,
         outModes: "out",
-        // bounce: false,
         attract: {
           enable: false,
           rotate: {
