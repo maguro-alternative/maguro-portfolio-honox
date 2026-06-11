@@ -1,4 +1,4 @@
-import build from '@hono/vite-build/cloudflare-workers'
+import build from '@hono/vite-build/vercel'
 import adapter from '@hono/vite-dev-server/node'
 import tailwindcss from '@tailwindcss/vite'
 import honox from 'honox/vite'

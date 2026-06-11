@@ -3,9 +3,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --mode client && vite build",
+    "build": "vite build --mode client && vite build && cp -r dist/assets .vercel/output/static/assets && node scripts/fix-vercel-runtime.mjs",
     "preview": "wrangler dev",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && vercel deploy --prebuilt --prod"
   },
   "private": true,
   "dependencies": {
