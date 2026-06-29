@@ -1,7 +1,7 @@
 export default function Uchuemon() {
   return (
     <img
-      src="./uchuemon.png"
+      src="/uchuemon.png"
       alt="Uchuemon"
     />
   );

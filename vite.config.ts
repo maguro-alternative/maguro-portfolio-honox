@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import honox from 'honox/vite'
 import { defineConfig } from 'vite'
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
   if (mode === 'client') {
     return {
       build: {
@@ -21,6 +21,9 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    // dev SSR では highlight.js を Node 側で解決させる（CJS の require を避ける）。
+    // 本番ビルドは従来どおりバンドルに含める。
+    ssr: command === 'serve' ? { external: ['highlight.js'] } : undefined,
     plugins: [
       honox({
         devServer: { adapter },
