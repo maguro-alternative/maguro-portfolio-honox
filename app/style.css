@@ -582,3 +582,81 @@ h1 {
 .slide-item.active {
   display: block;
 }
+
+/* ===== Gacha simulator (.gacha-page 配下にスコープ) ===== */
+.gacha-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN",
+    "Hiragino Sans", Meiryo, sans-serif;
+  background-size: 100%;
+  box-sizing: border-box;
+  -webkit-text-size-adjust: none;
+  font-size: calc(30 / 1684 * 100vw);
+  font-weight: 800;
+}
+
+.gacha-page ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+}
+
+.gacha-page li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  box-sizing: border-box;
+  border-bottom: #c0cfdb solid calc(2 / 1684 * 100vw);
+}
+
+.gacha-page h2 {
+  box-sizing: border-box;
+  background: #fff;
+  line-height: calc(62 / 1684 * 100vw);
+  border-left: #0c61bf solid calc(13 / 1659 * 100vw);
+  font-size: calc(28 / 1684 * 100vw);
+  padding-left: calc(25 / 1684 * 100vw);
+  color: #003d6d;
+  font-weight: 800;
+}
+
+.gacha-page .rare_box h3 {
+  height: calc(38 / 1684 * 100vw);
+  transform: skewX(-15deg);
+  background: #5f87a4;
+  position: relative;
+}
+
+.gacha-page .rare_box h3 .kind {
+  position: absolute;
+  transform: skewX(15deg) translateY(-50%);
+  left: 5px;
+  font-size: calc(24 / 1684 * 100vw);
+  color: #fff;
+}
+
+.gacha-page .icon-wrapper {
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0 10px 10px;
+}
+
+.gacha-page .tab_wrap {
+  background-color: #c1d7ee;
+  position: relative;
+  padding-top: calc(18 / 1684 * 100vw);
+  padding-bottom: calc(10 / 1684 * 100vw);
+  background-repeat: repeat-y;
+  background-position: left;
+  width: 100%;
+}
+
+.gacha-page .cacha_contents_wrapper {
+  width: calc(1420 / 1684 * 100vw);
+  padding-left: calc(38 / 1684 * 100vw);
+  margin: 0 auto;
+}
