@@ -1,6 +1,13 @@
 @import 'tailwindcss';
 
 @theme {
+    --animate-wave-slow: wave 12s linear infinite;
+    --animate-wave-mid: wave 8s linear infinite reverse;
+    --animate-wave-fast: wave 6s linear infinite;
+    @keyframes wave {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
     --animate-fall-small-7: fall-small 7s linear infinite;
     --animate-fall-small-9: fall-small 9s linear infinite;
     --animate-fall-small-13: fall-small 13s linear infinite;
@@ -659,4 +666,49 @@ h1 {
   width: calc(1420 / 1684 * 100vw);
   padding-left: calc(38 / 1684 * 100vw);
   margin: 0 auto;
+}
+
+/* ===== nine/kagura ポータル背景 ===== */
+.kagura-portal-bg {
+  background-color: #f5f0f0;
+  background-image:
+    url("https://senrankagura.marv.jp/img/bg_top_flower02.png"),
+    url("https://senrankagura.marv.jp/img/bg_main_flower03.png");
+  background-repeat: no-repeat, no-repeat;
+  background-position: right bottom, left bottom;
+  background-size: auto, auto;
+}
+
+.kagura-portal-bg p {
+  margin: 0;
+}
+
+.kagura-header-bg {
+  background: #e8e4e4
+    url("https://senrankagura.marv.jp/img/bg_header_top.png") no-repeat center
+    top / cover;
+  margin-bottom: 16px;
+}
+
+.kagura-content-box {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  margin: 16px 12px 24px;
+  padding: 20px 16px;
+  max-width: 540px;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  z-index: 20;
+  overflow: visible;
+}
+
+@media (min-width: 768px) {
+  .kagura-content-box {
+    padding: 32px 40px;
+    max-width: 700px;
+    margin-top: 8px;
+  }
 }
