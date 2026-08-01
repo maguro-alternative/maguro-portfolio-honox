@@ -9,9 +9,12 @@ type RendererProps = {
   ogType?: string
 }
 
-export default jsxRenderer(({ children, title, description, ogImage, ogType }: RendererProps) => {
+export default jsxRenderer(({ children, title, description, ogImage, ogType }: RendererProps, c) => {
   const fullTitle = title ?? 'マグロポートフォリオ'
   const desc = description ?? 'マグロのポートフォリオサイトです。'
+  // OGP クローラは相対パスを解決しないものが多いため、リクエスト URL を基準に絶対 URL 化する。
+  // 既に絶対 URL の場合はそのまま使われる。
+  const ogImageUrl = ogImage ? new URL(ogImage, c.req.url).toString() : undefined
 
   return (
     <html lang="ja">
@@ -26,9 +29,9 @@ export default jsxRenderer(({ children, title, description, ogImage, ogType }: R
         <meta property="og:type" content={ogType ?? 'website'} />
         <meta property="og:site_name" content="マグロポートフォリオ" />
         <meta property="og:locale" content="ja_JP" />
-        {ogImage ? <meta property="og:image" content={ogImage} /> : null}
+        {ogImageUrl ? <meta property="og:image" content={ogImageUrl} /> : null}
         <meta name="twitter:card" content="summary_large_image" />
-        {ogImage ? <meta name="twitter:image" content={ogImage} /> : null}
+        {ogImageUrl ? <meta name="twitter:image" content={ogImageUrl} /> : null}
         <Link href="/app/style.css" rel="stylesheet" />
         <Script src="/app/client.ts" async />
       </head>
