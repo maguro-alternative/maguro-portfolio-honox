@@ -1,11 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "honox-test",
+  "name": "maguro-portfolio",
   "main": "./dist/index.js",
   "compatibility_date": "2025-05-21",
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  // dist は client ビルドの成果物（assets/ と public/ のコピー）と
+  // Worker 本体（index.js）が同居するため、後者は .assetsignore で除外する。
+  // .assetsignore は npm run build:cf が生成する。
   "assets": {
     "directory": "./dist"
   }

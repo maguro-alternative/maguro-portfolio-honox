@@ -2,12 +2,12 @@
 
 ## プロジェクト概要
 
-maguro-alternative のポートフォリオサイト。HonoX (Hono ベースの SSR フレームワーク) + Cloudflare Workers 構成。
+maguro-alternative のポートフォリオサイト。HonoX (Hono ベースの SSR フレームワーク) 製。デプロイ先は Vercel と Cloudflare Workers の2系統を維持している。
 
 ## Tech Stack
 
 - **HonoX**: ファイルベースルーティング + JSX SSR
-- **Cloudflare Workers**: エッジランタイム
+- **Vercel Functions / Cloudflare Workers**: デプロイ先（`DEPLOY_TARGET` で切り替え）
 - **Cloudflare R2**: プライベートブログ記事のストレージ
 - **Tailwind CSS v4**: スタイリング（vite プラグイン経由）
 - **@mdx-js/rollup**: MDX サポート（ビルド時）
@@ -15,15 +15,20 @@ maguro-alternative のポートフォリオサイト。HonoX (Hono ベースの 
 ## コマンド
 
 ```sh
-npm run dev      # 開発サーバー（Vite）
-npm run build    # クライアント + サーバーの2段ビルド
-npm run deploy   # ビルド後 wrangler deploy
-npm run preview  # wrangler dev でローカル Workers 動作確認
+npm run dev        # 開発サーバー（Vite）
+npm run build      # Vercel 向け 2段ビルド
+npm run deploy     # ビルド後 vercel deploy --prod
+npm run build:cf   # Cloudflare 向け 2段ビルド
+npm run deploy:cf  # ビルド後 wrangler deploy
+npm run preview    # Cloudflare 向けビルド + wrangler dev
 ```
 
 ## アーキテクチャの注意点
 
 - `vite.config.ts` はクライアントビルドとサーバービルドを `mode` で分岐している
+- サーバービルドのターゲットは `DEPLOY_TARGET` 環境変数で決まる（未指定 = `@hono/vite-build/vercel`、`cloudflare` = `@hono/vite-build/cloudflare-workers`）。クライアント成果物は共通で `dist/` に出す（honox が `/dist/.vite/manifest.json` を決め打ちで読むため、この出力先は変更しない）
+- Cloudflare 版では `dist/` をそのまま静的アセットとして配信するので、Worker 本体（`dist/index.js`）と manifest は `build:cf` が生成する `dist/.assetsignore` で除外する
+- ランタイム非依存を保つこと（`node:*` や `fs` を使わない。記事読み込みは `import.meta.glob`、外部取得は `fetch`）
 - Islands（`app/islands/`）はクライアントサイドで動くコンポーネント。通常のコンポーネントと混在させない
 - Cloudflare Bindings（R2 等）は `c.env` 経由でアクセスする。型は `wrangler types` で生成した `worker-configuration.d.ts` を使う
 

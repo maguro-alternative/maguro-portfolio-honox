@@ -1,23 +1,30 @@
 # maguro-portfolio-honox
 
-maguro-alternative のポートフォリオサイト。HonoX + Cloudflare Workers で動作する。
+maguro-alternative のポートフォリオサイト。HonoX 製で、Vercel と Cloudflare Workers の両方にデプロイできる。
 
 ## Tech Stack
 
 - **Framework**: [HonoX](https://github.com/honojs/honox)
-- **Runtime**: Cloudflare Workers
+- **Runtime**: Vercel Functions（本番） / Cloudflare Workers
 - **Styling**: Tailwind CSS v4
 - **Storage**: Cloudflare R2（プライベートブログ記事）
 
 ## Commands
 
 ```sh
-npm install       # 依存関係インストール
-npm run dev       # 開発サーバー起動
-npm run build     # ビルド
-npm run deploy    # ビルド + Cloudflare Workers にデプロイ
-npm run preview   # wrangler dev でローカルプレビュー
+npm install        # 依存関係インストール
+npm run dev        # 開発サーバー起動
+
+npm run build      # Vercel 向けビルド
+npm run deploy     # ビルド + Vercel にデプロイ
+
+npm run build:cf   # Cloudflare Workers 向けビルド
+npm run deploy:cf  # ビルド + wrangler deploy
+npm run preview    # Cloudflare 向けビルド + wrangler dev でローカルプレビュー
 ```
+
+デプロイ先は環境変数 `DEPLOY_TARGET` で切り替わる（未指定 = Vercel、`cloudflare` = Workers）。
+クライアントビルドの成果物（`dist/`）は両者で共通。
 
 ## Blog System
 
@@ -37,6 +44,12 @@ npm run preview   # wrangler dev でローカルプレビュー
 ```sh
 wrangler secret put PRIVATE_PASSWORD
 ```
+
+### 静的アセットの制約
+
+Cloudflare Workers は 1ファイル 25MiB を超える静的アセットを配信できない。
+`/snow` の背景は元々 77MB の gif だったが、この上限に引っかかるため mp4（`public/yumimahou.mp4`）+
+poster 画像に置き換えてある。大きなメディアを追加する場合は同じ方針に従うこと。
 
 ## Directory Structure
 
