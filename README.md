@@ -28,18 +28,16 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev でローカル�
 
 ## Deploy
 
-本番は `maguro-alternative.com`（Cloudflare Workers）。**main への push で自動デプロイされる**
-（`.github/workflows/deploy-cloudflare.yml`）。手元から出したい場合のみ `npm run deploy:cf` を使う。
+**手動デプロイのみ。** push しても何も起きない。
 
-ワークフローには以下の GitHub Secrets が必要:
+| 環境 | コマンド | 備考 |
+|------|----------|------|
+| Cloudflare Workers | `npm run deploy:cf` | 本番（`maguro-alternative.com`） |
+| Vercel | `npm run deploy` | プレビュー用 |
 
-| Secret | 用途 |
-|--------|------|
-| `CLOUDFLARE_API_TOKEN` | Workers へのデプロイ権限を持つ API トークン |
-| `CLOUDFLARE_ACCOUNT_ID` | デプロイ先アカウントの ID |
-
-Vercel は手動デプロイのまま（`npm run deploy`）。Node は `engines` と `.npmrc` の
-`engine-strict=true` により 22.x に固定されているので、CI もローカルも 22 系を使う。
+初回は `wrangler login` が必要。Node は `engines` と `.npmrc` の `engine-strict=true` により
+22.x に固定されているので、22 系で実行すること（Vercel CLI は新しい Node だと依存の
+engine チェックで弾かれる）。
 
 ## Blog System
 
