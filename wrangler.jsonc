@@ -11,7 +11,18 @@
   // .assetsignore は npm run build:cf が生成する。
   "assets": {
     "directory": "./dist"
-  }
+  },
+  // routes を指定すると workers.dev は既定で無効になるため、
+  // プレビュー用に明示的に有効化しておく。
+  "workers_dev": true,
+  // Custom Domain は Cloudflare が DNS レコードと証明書を自動で用意する。
+  // ただし対象ホストに既存の DNS レコードがあると作成に失敗するので、
+  // 先にダッシュボードで削除しておく必要がある。
+  // www は app/server.ts の init ミドルウェアで apex へ 301 リダイレクトする。
+  "routes": [
+    { "pattern": "maguro-alternative.com", "custom_domain": true },
+    { "pattern": "www.maguro-alternative.com", "custom_domain": true }
+  ]
   // "vars": {
   //   "MY_VAR": "my-variable"
   // },
