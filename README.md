@@ -26,6 +26,21 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev でローカル�
 デプロイ先は環境変数 `DEPLOY_TARGET` で切り替わる（未指定 = Vercel、`cloudflare` = Workers）。
 クライアントビルドの成果物（`dist/`）は両者で共通。
 
+## Deploy
+
+本番は `maguro-alternative.com`（Cloudflare Workers）。**main への push で自動デプロイされる**
+（`.github/workflows/deploy-cloudflare.yml`）。手元から出したい場合のみ `npm run deploy:cf` を使う。
+
+ワークフローには以下の GitHub Secrets が必要:
+
+| Secret | 用途 |
+|--------|------|
+| `CLOUDFLARE_API_TOKEN` | Workers へのデプロイ権限を持つ API トークン |
+| `CLOUDFLARE_ACCOUNT_ID` | デプロイ先アカウントの ID |
+
+Vercel は手動デプロイのまま（`npm run deploy`）。Node は `engines` と `.npmrc` の
+`engine-strict=true` により 22.x に固定されているので、CI もローカルも 22 系を使う。
+
 ## Blog System
 
 公開記事とプライベート記事の2系統を持つ。
