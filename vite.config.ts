@@ -17,7 +17,6 @@ export default defineConfig(({ command, mode }) => {
         rollupOptions: {
           input: ['./app/client.ts', './app/style.css'],
         },
-        cssCodeSplit: true,
         manifest: true,
       },
       plugins: [
@@ -33,7 +32,6 @@ export default defineConfig(({ command, mode }) => {
     plugins: [
       honox({
         devServer: { adapter },
-        client: { input: ['./app/style.css'] }
       }),
       tailwindcss(),
       build(),
