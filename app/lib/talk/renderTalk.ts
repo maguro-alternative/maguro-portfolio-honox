@@ -1,0 +1,397 @@
+// ドルフィンウェーブの会話画面風 UI を Canvas に描く。
+// 寸法・配色はゲーム画面のスクリーンショット（描画領域 2463x1846 = 4:3）から実測した値を
+// REF_W 基準の比率として持ち、任意のキャンバスサイズにスケールして使う。
+import { drawEmblem, findTeam } from './teams'
+
+const REF_W = 2463
+
+export const TALK_ASPECTS = {
+  '16:9': 16 / 9,
+  '4:3': 4 / 3,
+} as const
+
+export type TalkAspect = keyof typeof TALK_ASPECTS
+
+/** 出力解像度。幅は固定で、高さをアスペクト比から決める。 */
+export function talkCanvasSize(aspect: TalkAspect, width = 1920) {
+  return { width, height: Math.round(width / TALK_ASPECTS[aspect]) }
+}
+
+export const MAX_LINES = 3
+
+export interface TalkLayer {
+  id: string
+  image: CanvasImageSource & { naturalWidth?: number; naturalHeight?: number; width: number; height: number }
+  /** キャンバス幅を 1 とした、中心からの横方向のずれ */
+  offX: number
+  /** キャンバス高さを 1 とした、中心からの縦方向のずれ */
+  offY: number
+  /** 1 = キャンバスを覆う倍率 */
+  zoom: number
+}
+
+export interface TalkScene {
+  width: number
+  height: number
+  background: string
+  layers: TalkLayer[]
+  name: string
+  teamId: string | null
+  lines: string[]
+  showMenu: boolean
+  showSkip: boolean
+  showNext: boolean
+}
+
+const COLORS = {
+  plate: '#ffffff',
+  nameText: '#163b69',
+  dialogueFill: '#ffffff',
+  dialogueOutline: '#000000',
+  buttonFace: '#ffffff',
+  buttonRing: '#4d95f6',
+  buttonIcon: '#5d84bb',
+  teamLabel: '#1c1c1c',
+}
+
+// 公式サイト（hpgames.jp/dolphin-wave）の html は font-family:"Noto Sans JP",sans-serif、
+// キャラ名の .chara-mv__name は font-weight:900。名前まわりはこれに合わせる。
+export const TALK_NAME_FONT_FAMILY = '"Noto Sans JP", sans-serif'
+
+// 公式のお知らせページ（webview-dolphin.marv.jp）の body で使われているスタック。
+// セリフ本文と UI ラベルはこちらに合わせる。
+export const TALK_DIALOGUE_FONT_FAMILY =
+  '"Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif'
+
+/** REF_W 基準の実測値からキャンバス座標を作るためのスケール */
+function unit(width: number) {
+  return width / REF_W
+}
+
+function imageSize(layer: TalkLayer) {
+  const w = layer.image.naturalWidth || (layer.image.width as number)
+  const h = layer.image.naturalHeight || (layer.image.height as number)
+  return { w, h }
+}
+
+/** レイヤーがキャンバス上で占める矩形を返す（ドラッグ判定にも使う）。 */
+export function layerRect(layer: TalkLayer, W: number, H: number) {
+  const { w, h } = imageSize(layer)
+  if (!w || !h) return { x: 0, y: 0, w: 0, h: 0 }
+  const cover = Math.max(W / w, H / h)
+  const dw = w * cover * layer.zoom
+  const dh = h * cover * layer.zoom
+  return {
+    x: W / 2 + layer.offX * W - dw / 2,
+    y: H / 2 + layer.offY * H - dh / 2,
+    w: dw,
+    h: dh,
+  }
+}
+
+export function renderTalkScene(ctx: CanvasRenderingContext2D, scene: TalkScene) {
+  const { width: W, height: H } = scene
+  ctx.clearRect(0, 0, W, H)
+  ctx.fillStyle = scene.background
+  ctx.fillRect(0, 0, W, H)
+
+  for (const layer of scene.layers) {
+    const r = layerRect(layer, W, H)
+    if (r.w <= 0 || r.h <= 0) continue
+    ctx.drawImage(layer.image, r.x, r.y, r.w, r.h)
+  }
+
+  if (scene.showMenu) drawMenuButtons(ctx, W)
+  if (scene.showSkip) drawSkipButton(ctx, W)
+  drawNamePlate(ctx, scene)
+  drawDialogue(ctx, scene)
+  if (scene.showNext) drawNextTriangle(ctx, W, H)
+}
+
+// ---------------------------------------------------------------- 上部ボタン
+
+const BTN_R = 56
+const BTN_CX = 103
+const BTN_CY = 87
+const BTN_GAP = 143
+
+function buttonBase(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, u: number) {
+  ctx.save()
+  ctx.shadowColor = 'rgba(0,0,0,0.28)'
+  ctx.shadowBlur = 10 * u
+  ctx.shadowOffsetY = 5 * u
+  ctx.fillStyle = COLORS.buttonFace
+  ctx.beginPath()
+  ctx.arc(cx, cy, r, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+
+  ctx.strokeStyle = COLORS.buttonRing
+  ctx.lineWidth = 3.5 * u
+  ctx.beginPath()
+  ctx.arc(cx, cy, r - 8 * u, 0, Math.PI * 2)
+  ctx.stroke()
+}
+
+function drawMenuButtons(ctx: CanvasRenderingContext2D, W: number) {
+  const u = unit(W)
+  const r = BTN_R * u
+  const cy = BTN_CY * u
+  const icons = [drawLogIcon, drawAutoIcon, drawHideIcon]
+  icons.forEach((draw, i) => {
+    const cx = (BTN_CX + BTN_GAP * i) * u
+    buttonBase(ctx, cx, cy, r, u)
+    ctx.save()
+    ctx.fillStyle = COLORS.buttonIcon
+    ctx.strokeStyle = COLORS.buttonIcon
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    draw(ctx, cx, cy, r)
+    ctx.restore()
+  })
+}
+
+function drawLogIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  const w = r * 1.14
+  const h = r * 0.78
+  const x = cx - w / 2
+  const y = cy - h / 2 - r * 0.1
+  const rad = r * 0.14
+  ctx.lineWidth = r * 0.13
+  ctx.beginPath()
+  ctx.moveTo(x + rad, y)
+  ctx.lineTo(x + w - rad, y)
+  ctx.quadraticCurveTo(x + w, y, x + w, y + rad)
+  ctx.lineTo(x + w, y + h - rad)
+  ctx.quadraticCurveTo(x + w, y + h, x + w - rad, y + h)
+  ctx.lineTo(x + w * 0.34, y + h)
+  ctx.lineTo(x + w * 0.24, y + h + r * 0.28)
+  ctx.lineTo(x + w * 0.2, y + h)
+  ctx.lineTo(x + rad, y + h)
+  ctx.quadraticCurveTo(x, y + h, x, y + h - rad)
+  ctx.lineTo(x, y + rad)
+  ctx.quadraticCurveTo(x, y, x + rad, y)
+  ctx.closePath()
+  ctx.stroke()
+  for (const dx of [-r * 0.26, 0, r * 0.26]) {
+    ctx.beginPath()
+    ctx.arc(cx + dx, y + h / 2, r * 0.085, 0, Math.PI * 2)
+    ctx.fill()
+  }
+}
+
+function drawAutoIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  // フォールバックフォントでも円からはみ出さないよう、実測して幅を合わせる
+  const target = r * 1.36
+  let fs = r * 0.5
+  ctx.font = `700 ${fs}px ${TALK_DIALOGUE_FONT_FAMILY}`
+  fs *= target / ctx.measureText('AUTO').width
+  ctx.font = `700 ${fs}px ${TALK_DIALOGUE_FONT_FAMILY}`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('AUTO', cx, cy + r * 0.02)
+}
+
+function drawHideIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  // 斜めに傾いた「=」に取り消し線が入った、ウィンドウ非表示のアイコン
+  const w = r * 0.6
+  const th = r * 0.26
+  const skew = r * 0.16
+  for (const dy of [-r * 0.24, r * 0.26]) {
+    ctx.beginPath()
+    ctx.moveTo(cx - w + skew, cy + dy - th / 2)
+    ctx.lineTo(cx + w, cy + dy - th / 2)
+    ctx.lineTo(cx + w - skew, cy + dy + th / 2)
+    ctx.lineTo(cx - w, cy + dy + th / 2)
+    ctx.closePath()
+    ctx.fill()
+  }
+  ctx.lineWidth = r * 0.11
+  ctx.beginPath()
+  ctx.moveTo(cx - r * 0.66, cy + r * 0.62)
+  ctx.lineTo(cx + r * 0.66, cy - r * 0.62)
+  ctx.stroke()
+}
+
+function drawSkipButton(ctx: CanvasRenderingContext2D, W: number) {
+  const u = unit(W)
+  const r = BTN_R * u
+  const cx = W - BTN_CX * u
+  const cy = BTN_CY * u
+  buttonBase(ctx, cx, cy, r, u)
+
+  ctx.save()
+  ctx.fillStyle = COLORS.buttonIcon
+  ctx.strokeStyle = COLORS.buttonIcon
+  ctx.lineJoin = 'round'
+  const s = r * 0.5
+  const ox = cx - r * 0.16
+  ctx.beginPath()
+  ctx.moveTo(ox - s * 0.9, cy - s)
+  ctx.lineTo(ox + s * 0.35, cy)
+  ctx.lineTo(ox - s * 0.9, cy + s)
+  ctx.lineTo(ox - s * 0.2, cy + s)
+  ctx.lineTo(ox + s * 1.05, cy)
+  ctx.lineTo(ox - s * 0.2, cy - s)
+  ctx.closePath()
+  ctx.fill()
+  ctx.lineWidth = r * 0.12
+  ctx.beginPath()
+  ctx.moveTo(cx + r * 0.44, cy - s)
+  ctx.lineTo(cx + r * 0.44, cy + s)
+  ctx.stroke()
+  ctx.restore()
+}
+
+// -------------------------------------------------------------- ネームプレート
+
+const PLATE_LEFT = 390
+const PLATE_FROM_BOTTOM = 346 // プレート上辺の、下端からの距離
+const PLATE_H = 65
+const PLATE_MIN_SOLID_W = 442
+const LOGO_W = 76
+const NAME_FONT = 47
+const NAME_BASELINE = 48 // プレート上辺から
+const TEAM_LABEL_FONT = 13
+const TEAM_LABEL_BASELINE = 61
+const EMBLEM_CX = 34
+const EMBLEM_CY = 23
+const EMBLEM_R = 21
+
+// 実線部の右側に続くドット抜けパターン（列ごとに埋める行番号 0..3）
+const DITHER_COLUMNS: number[][] = [
+  [0, 1, 2],
+  [0, 2],
+  [0, 1],
+  [0, 1, 3],
+  [0, 1],
+  [0],
+]
+
+function drawNamePlate(ctx: CanvasRenderingContext2D, scene: TalkScene) {
+  const { width: W, height: H } = scene
+  const name = scene.name.trim()
+  const team = findTeam(scene.teamId)
+  if (!name && !team) return
+
+  const u = unit(W)
+  const x = PLATE_LEFT * u
+  const y = H - PLATE_FROM_BOTTOM * u
+  const h = PLATE_H * u
+  const logoW = team ? LOGO_W * u : 12 * u
+
+  ctx.save()
+  ctx.font = `900 ${NAME_FONT * u}px ${TALK_NAME_FONT_FAMILY}`
+  const nameW = name ? ctx.measureText(name).width : 0
+  ctx.restore()
+
+  const solidW = Math.max(PLATE_MIN_SOLID_W * u, logoW + nameW + 46 * u)
+
+  ctx.save()
+  ctx.shadowColor = 'rgba(0,0,0,0.3)'
+  ctx.shadowBlur = 9 * u
+  ctx.shadowOffsetX = 4 * u
+  ctx.shadowOffsetY = 4 * u
+  ctx.fillStyle = COLORS.plate
+  ctx.fillRect(x, y, solidW, h)
+
+  const cell = h / 4
+  DITHER_COLUMNS.forEach((rows, col) => {
+    for (const row of rows) {
+      ctx.fillRect(x + solidW + col * cell, y + row * cell, cell, cell)
+    }
+  })
+  ctx.restore()
+
+  if (team) {
+    drawEmblem(ctx, team, x + EMBLEM_CX * u, y + EMBLEM_CY * u, EMBLEM_R * u)
+    ctx.save()
+    ctx.fillStyle = COLORS.teamLabel
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'alphabetic'
+    let fs = TEAM_LABEL_FONT * u
+    ctx.font = `700 ${fs}px ${TALK_NAME_FONT_FAMILY}`
+    const maxW = (LOGO_W - 6) * u
+    if (ctx.measureText(team.label).width > maxW) {
+      fs = fs * (maxW / ctx.measureText(team.label).width)
+      ctx.font = `700 ${fs}px ${TALK_NAME_FONT_FAMILY}`
+    }
+    ctx.fillText(team.label, x + (LOGO_W / 2) * u, y + TEAM_LABEL_BASELINE * u)
+    ctx.restore()
+  }
+
+  if (name) {
+    ctx.save()
+    ctx.fillStyle = COLORS.nameText
+    ctx.font = `900 ${NAME_FONT * u}px ${TALK_NAME_FONT_FAMILY}`
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'alphabetic'
+    ctx.fillText(name, x + logoW + 2 * u, y + NAME_BASELINE * u)
+    ctx.restore()
+  }
+}
+
+// -------------------------------------------------------------------- セリフ
+
+const TEXT_LEFT = 565
+const TEXT_FONT = 54
+const TEXT_LINE_HEIGHT = 68
+const TEXT_LAST_BASELINE_FROM_BOTTOM = 137
+
+function drawDialogue(ctx: CanvasRenderingContext2D, scene: TalkScene) {
+  const { width: W, height: H } = scene
+  const lines = scene.lines.slice(0, MAX_LINES).filter((l) => l !== '')
+  if (lines.length === 0) return
+
+  const u = unit(W)
+  const fs = TEXT_FONT * u
+  const lh = TEXT_LINE_HEIGHT * u
+  const lastBaseline = H - TEXT_LAST_BASELINE_FROM_BOTTOM * u
+  const firstBaseline = lastBaseline - (lines.length - 1) * lh
+
+  ctx.save()
+  ctx.font = `900 ${fs}px ${TALK_DIALOGUE_FONT_FAMILY}`
+  ctx.textAlign = 'left'
+  ctx.textBaseline = 'alphabetic'
+  ctx.lineJoin = 'round'
+  ctx.miterLimit = 2
+  ctx.lineWidth = fs * 0.2
+  ctx.strokeStyle = COLORS.dialogueOutline
+  ctx.fillStyle = COLORS.dialogueFill
+
+  lines.forEach((line, i) => {
+    const y = firstBaseline + i * lh
+    ctx.strokeText(line, TEXT_LEFT * u, y)
+  })
+  lines.forEach((line, i) => {
+    const y = firstBaseline + i * lh
+    ctx.fillText(line, TEXT_LEFT * u, y)
+  })
+  ctx.restore()
+}
+
+// -------------------------------------------------------------------- ▽
+
+const NEXT_CX = 1983
+const NEXT_FROM_BOTTOM = 90
+const NEXT_HALF_W = 33
+const NEXT_H = 30
+
+function drawNextTriangle(ctx: CanvasRenderingContext2D, W: number, H: number) {
+  const u = unit(W)
+  const cx = NEXT_CX * u
+  const cy = H - NEXT_FROM_BOTTOM * u
+  ctx.save()
+  ctx.lineJoin = 'round'
+  ctx.lineWidth = 3.5 * u
+  ctx.strokeStyle = 'rgba(0,0,0,0.45)'
+  ctx.fillStyle = '#ffffff'
+  ctx.beginPath()
+  ctx.moveTo(cx - NEXT_HALF_W * u, cy - (NEXT_H / 2) * u)
+  ctx.lineTo(cx + NEXT_HALF_W * u, cy - (NEXT_H / 2) * u)
+  ctx.lineTo(cx, cy + (NEXT_H / 2) * u)
+  ctx.closePath()
+  ctx.stroke()
+  ctx.fill()
+  ctx.restore()
+}
