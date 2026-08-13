@@ -336,18 +336,20 @@ function drawNamePlate(ctx: CanvasRenderingContext2D, scene: TalkScene) {
 const TEXT_LEFT = 565
 const TEXT_FONT = 54
 const TEXT_LINE_HEIGHT = 68
-const TEXT_LAST_BASELINE_FROM_BOTTOM = 137
+// ゲームは 1 行目の位置を固定して下に伸ばす（1 行のスクショでも 2 行のスクショの
+// 1 行目と同じ高さに出る）。最終行を下端に合わせると 1 行のとき 1 行分低くなる。
+const TEXT_FIRST_BASELINE_FROM_BOTTOM = 205
 
 function drawDialogue(ctx: CanvasRenderingContext2D, scene: TalkScene) {
   const { width: W, height: H } = scene
-  const lines = scene.lines.slice(0, MAX_LINES).filter((l) => l !== '')
+  const lines = scene.lines.slice(0, MAX_LINES)
+  while (lines.length > 0 && lines[lines.length - 1] === '') lines.pop()
   if (lines.length === 0) return
 
   const u = unit(W)
   const fs = TEXT_FONT * u
   const lh = TEXT_LINE_HEIGHT * u
-  const lastBaseline = H - TEXT_LAST_BASELINE_FROM_BOTTOM * u
-  const firstBaseline = lastBaseline - (lines.length - 1) * lh
+  const firstBaseline = H - TEXT_FIRST_BASELINE_FROM_BOTTOM * u
 
   ctx.save()
   ctx.font = `900 ${fs}px ${TALK_DIALOGUE_FONT_FAMILY}`
