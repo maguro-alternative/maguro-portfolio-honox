@@ -233,9 +233,10 @@ function drawHideIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: 
   bar(3, 22)
 
   // 水平方向の太さを指定して 45 度の線を引く（dx は水平方向のずらし量）。
-  // 実物は斜線の端とリングの間に白い余白が残る（端は中心から半径 48 前後で止まる）。
-  const SLASH_Y_TOP = -33
-  const SLASH_Y_BOTTOM = 35
+  // 斜線の端とリングの間に白い余白を残す。実物は半径 48 前後まで伸びるが、
+  // 縮小表示で分離が見えるよう、半径 45 前後で止めて余白をやや広めに取っている。
+  const SLASH_Y_TOP = -31
+  const SLASH_Y_BOTTOM = 33
   const slash = (dx: number, horizontalWidth: number, color: string) => {
     ctx.strokeStyle = color
     ctx.lineWidth = (horizontalWidth / Math.SQRT2) * s
