@@ -335,6 +335,8 @@ function drawNamePlate(ctx: CanvasRenderingContext2D, scene: TalkScene) {
   const x = PLATE_LEFT * u
   const y = H - PLATE_FROM_BOTTOM * u
   const h = PLATE_H * u
+  const logoBoxH = PLATE_H - LOGO_PAD_Y * 2
+  // 実機はロゴの縦横比によらず枠幅が一定（横長のコラボロゴでも名前の開始位置が変わらない）。
   const logoW = logo ? LOGO_W * u : 12 * u
 
   ctx.save()
@@ -368,8 +370,8 @@ function drawNamePlate(ctx: CanvasRenderingContext2D, scene: TalkScene) {
     const iw = logo.naturalWidth || logo.width
     const ih = logo.naturalHeight || logo.height
     if (iw && ih) {
-      const boxW = LOGO_W * u
-      const boxH = (PLATE_H - LOGO_PAD_Y * 2) * u
+      const boxW = logoW
+      const boxH = logoBoxH * u
       const scale = Math.min(boxW / iw, boxH / ih)
       const dw = iw * scale
       const dh = ih * scale

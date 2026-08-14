@@ -445,7 +445,7 @@ export default function DolphinTalkClient() {
                 title="ロゴなし"
                 aria-label="ロゴなし"
                 aria-pressed={logoId === null}
-                className={`flex h-11 w-11 items-center justify-center rounded-md border bg-white text-[10px] font-semibold text-slate-500 ${
+                className={`flex h-11 w-16 items-center justify-center rounded-md border bg-white text-[10px] font-semibold text-slate-500 ${
                   logoId === null ? 'border-indigo-400 ring-2 ring-indigo-200' : 'border-slate-200'
                 }`}
               >
@@ -458,11 +458,11 @@ export default function DolphinTalkClient() {
                   title={l.label}
                   aria-label={l.label}
                   aria-pressed={logoId === l.id}
-                  className={`flex h-11 w-11 items-center justify-center rounded-md border bg-white p-1 ${
+                  className={`flex h-11 w-16 items-center justify-center rounded-md border bg-white p-1 ${
                     logoId === l.id ? 'border-indigo-400 ring-2 ring-indigo-200' : 'border-slate-200'
                   }`}
                 >
-                  <img src={l.src} alt="" className="max-h-full max-w-full object-contain" />
+                  <img src={l.src} alt="" className="max-h-full max-w-full min-w-0 object-contain" />
                 </button>
               ))}
             </div>
