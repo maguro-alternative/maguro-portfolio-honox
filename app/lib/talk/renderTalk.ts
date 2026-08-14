@@ -52,6 +52,7 @@ const COLORS = {
   buttonRing: '#4d95f6',
   buttonIcon: '#5d84bb',
   teamLabel: '#1c1c1c',
+  nextOutline: '#0b1226',
 }
 
 // 公式サイト（hpgames.jp/dolphin-wave）の html は font-family:"Noto Sans JP",sans-serif、
@@ -429,10 +430,13 @@ function drawDialogue(ctx: CanvasRenderingContext2D, scene: TalkScene) {
 
 // -------------------------------------------------------------------- ▽
 
-const NEXT_CX = 1983
+// 実測: 白い三角は 42x24、そこに太さ 12.8 の濃紺のフチが付き、外周は 60x37。
+// 実物はゆっくり上下に動くので、中心の高さは動きの中間あたりに置いている。
+const NEXT_CX = 1954
 const NEXT_FROM_BOTTOM = 90
-const NEXT_HALF_W = 33
-const NEXT_H = 30
+const NEXT_HALF_W = 21
+const NEXT_H = 24
+const NEXT_OUTLINE_W = 12.8
 
 function drawNextTriangle(ctx: CanvasRenderingContext2D, W: number, H: number) {
   const u = unit(W)
@@ -440,8 +444,8 @@ function drawNextTriangle(ctx: CanvasRenderingContext2D, W: number, H: number) {
   const cy = H - NEXT_FROM_BOTTOM * u
   ctx.save()
   ctx.lineJoin = 'round'
-  ctx.lineWidth = 3.5 * u
-  ctx.strokeStyle = 'rgba(0,0,0,0.45)'
+  ctx.lineWidth = NEXT_OUTLINE_W * u
+  ctx.strokeStyle = COLORS.nextOutline
   ctx.fillStyle = '#ffffff'
   ctx.beginPath()
   ctx.moveTo(cx - NEXT_HALF_W * u, cy - (NEXT_H / 2) * u)
