@@ -247,8 +247,11 @@ function drawSkipButton(ctx: CanvasRenderingContext2D, W: number) {
 
 const PLATE_LEFT = 390
 const PLATE_FROM_BOTTOM = 346 // プレート上辺の、下端からの距離
-const PLATE_H = 65
-const PLATE_MIN_SOLID_W = 442
+const PLATE_H = 66
+const PLATE_MIN_SOLID_W = 435
+// プレートは長方形ではなく、上辺に対して下辺が左へずれた平行四辺形。
+// 実測: 左辺は上端 x=391 → 下端 x=385（高さ 65 に対して 6px）。右端の各段も同じ傾き。
+const PLATE_SHEAR = 6
 const LOGO_W = 76
 const NAME_FONT = 47
 const NAME_BASELINE = 48 // プレート上辺から
@@ -258,14 +261,14 @@ const EMBLEM_CX = 34
 const EMBLEM_CY = 23
 const EMBLEM_R = 21
 
-// 実線部の右側に続くドット抜けパターン（列ごとに埋める行番号 0..3）
-const DITHER_COLUMNS: number[][] = [
-  [0, 1, 2],
-  [0, 2],
-  [0, 1],
-  [0, 1, 3],
-  [0, 1],
-  [0],
+// 実線部の右に続く崩れ。網目ではなく、高さを 3 等分した各段が違う長さで階段状に伸び、
+// 少し離れた位置に独立したブロックが付く。実測値（実線部の右端からの相対 px）。
+const PLATE_TAIL: { row: 0 | 1 | 2; from: number; to: number }[] = [
+  { row: 0, from: 27, to: 115 },
+  { row: 1, from: 0, to: 46 },
+  { row: 1, from: 73, to: 91 },
+  { row: 2, from: 0, to: 23 },
+  { row: 2, from: 51, to: 69 },
 ]
 
 function drawNamePlate(ctx: CanvasRenderingContext2D, scene: TalkScene) {
@@ -293,14 +296,17 @@ function drawNamePlate(ctx: CanvasRenderingContext2D, scene: TalkScene) {
   ctx.shadowOffsetX = 4 * u
   ctx.shadowOffsetY = 4 * u
   ctx.fillStyle = COLORS.plate
-  ctx.fillRect(x, y, solidW, h)
-
-  const cell = h / 4
-  DITHER_COLUMNS.forEach((rows, col) => {
-    for (const row of rows) {
-      ctx.fillRect(x + solidW + col * cell, y + row * cell, cell, cell)
-    }
-  })
+  // プレート上辺を原点にして、下へ行くほど左へずれるせん断をかける。
+  // 実線部と右端の崩れは 1 つのパスにまとめて塗る（別々に塗ると影が継ぎ目に乗る）。
+  ctx.translate(x, y)
+  ctx.transform(1, 0, -PLATE_SHEAR / PLATE_H, 1, 0, 0)
+  const rowH = h / 3
+  ctx.beginPath()
+  ctx.rect(0, 0, solidW, h)
+  for (const seg of PLATE_TAIL) {
+    ctx.rect(solidW + seg.from * u, seg.row * rowH, (seg.to - seg.from) * u, rowH)
+  }
+  ctx.fill()
   ctx.restore()
 
   if (team) {
