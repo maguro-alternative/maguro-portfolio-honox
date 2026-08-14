@@ -110,7 +110,10 @@ export function renderTalkScene(ctx: CanvasRenderingContext2D, scene: TalkScene)
 
 // ---------------------------------------------------------------- 上部ボタン
 
-const BTN_R = 56
+// 実測: 白い円の外径は 60、青リングは半径 53（外端から 7 内側）で太さ 5。
+const BTN_R = 60
+const BTN_RING_INSET = 7
+const BTN_RING_W = 5
 const BTN_CX = 103
 const BTN_CY = 87
 const BTN_GAP = 143
@@ -127,9 +130,9 @@ function buttonBase(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: nu
   ctx.restore()
 
   ctx.strokeStyle = COLORS.buttonRing
-  ctx.lineWidth = 3.5 * u
+  ctx.lineWidth = BTN_RING_W * u
   ctx.beginPath()
-  ctx.arc(cx, cy, r - 8 * u, 0, Math.PI * 2)
+  ctx.arc(cx, cy, r - BTN_RING_INSET * u, 0, Math.PI * 2)
   ctx.stroke()
 }
 
@@ -142,6 +145,7 @@ function drawMenuButtons(ctx: CanvasRenderingContext2D, W: number) {
     const cx = (BTN_CX + BTN_GAP * i) * u
     buttonBase(ctx, cx, cy, r, u)
     ctx.save()
+    clipInsideRing(ctx, cx, cy, r, u)
     ctx.fillStyle = COLORS.buttonIcon
     ctx.strokeStyle = COLORS.buttonIcon
     ctx.lineCap = 'round'
@@ -151,13 +155,27 @@ function drawMenuButtons(ctx: CanvasRenderingContext2D, W: number) {
   })
 }
 
+/** アイコンの描画がリングを削らないよう、リング内側で切り抜く。 */
+function clipInsideRing(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  r: number,
+  u: number
+) {
+  ctx.beginPath()
+  ctx.arc(cx, cy, r - (BTN_RING_INSET + BTN_RING_W / 2) * u, 0, Math.PI * 2)
+  ctx.clip()
+}
+
 function drawLogIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  const w = r * 1.14
-  const h = r * 0.78
+  // 実測: 枠の外接は 1.10r x 0.80r、線幅 0.092r、尻尾を含めた高さが 0.98r。
+  const w = r * 1.008
+  const h = r * 0.708
   const x = cx - w / 2
-  const y = cy - h / 2 - r * 0.1
-  const rad = r * 0.14
-  ctx.lineWidth = r * 0.13
+  const y = cy - r * 0.3375
+  const rad = r * 0.12
+  ctx.lineWidth = r * 0.092
   ctx.beginPath()
   ctx.moveTo(x + rad, y)
   ctx.lineTo(x + w - rad, y)
@@ -165,7 +183,7 @@ function drawLogIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: n
   ctx.lineTo(x + w, y + h - rad)
   ctx.quadraticCurveTo(x + w, y + h, x + w - rad, y + h)
   ctx.lineTo(x + w * 0.34, y + h)
-  ctx.lineTo(x + w * 0.24, y + h + r * 0.28)
+  ctx.lineTo(x + w * 0.24, y + h + r * 0.1665)
   ctx.lineTo(x + w * 0.2, y + h)
   ctx.lineTo(x + rad, y + h)
   ctx.quadraticCurveTo(x, y + h, x, y + h - rad)
@@ -173,16 +191,16 @@ function drawLogIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: n
   ctx.quadraticCurveTo(x, y, x + rad, y)
   ctx.closePath()
   ctx.stroke()
-  for (const dx of [-r * 0.26, 0, r * 0.26]) {
+  for (const dx of [-r * 0.221, 0, r * 0.221]) {
     ctx.beginPath()
-    ctx.arc(cx + dx, y + h / 2, r * 0.085, 0, Math.PI * 2)
+    ctx.arc(cx + dx, y + h / 2, r * 0.0625, 0, Math.PI * 2)
     ctx.fill()
   }
 }
 
 function drawAutoIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  // フォールバックフォントでも円からはみ出さないよう、実測して幅を合わせる
-  const target = r * 1.36
+  // フォールバックフォントでも円からはみ出さないよう、実測幅（1.467r）に合わせる
+  const target = r * 1.467
   let fs = r * 0.5
   ctx.font = `700 ${fs}px ${TALK_DIALOGUE_FONT_FAMILY}`
   fs *= target / ctx.measureText('AUTO').width
@@ -193,11 +211,12 @@ function drawAutoIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: 
 }
 
 function drawHideIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  // 斜めに傾いた「=」に取り消し線が入った、ウィンドウ非表示のアイコン
-  const w = r * 0.6
-  const th = r * 0.26
+  // 斜めに傾いた「=」に取り消し線が入った、ウィンドウ非表示のアイコン。
+  // 実測: バーは太さ 0.30r、中心が cy±0.192r（間隔 0.084r）。
+  const w = r * 0.575
+  const th = r * 0.3
   const skew = r * 0.16
-  for (const dy of [-r * 0.24, r * 0.26]) {
+  for (const dy of [-r * 0.192, r * 0.192]) {
     ctx.beginPath()
     ctx.moveTo(cx - w + skew, cy + dy - th / 2)
     ctx.lineTo(cx + w, cy + dy - th / 2)
@@ -206,10 +225,16 @@ function drawHideIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: 
     ctx.closePath()
     ctx.fill()
   }
-  ctx.lineWidth = r * 0.11
+  // 取り消し線。実物はバーとの間に白い隙間が入るので、先に白で太く引いてから重ねる。
   ctx.beginPath()
-  ctx.moveTo(cx - r * 0.66, cy + r * 0.62)
-  ctx.lineTo(cx + r * 0.66, cy - r * 0.62)
+  ctx.moveTo(cx - r * 0.567, cy + r * 0.567)
+  ctx.lineTo(cx + r * 0.567, cy - r * 0.567)
+  ctx.save()
+  ctx.strokeStyle = COLORS.buttonFace
+  ctx.lineWidth = r * 0.227
+  ctx.stroke()
+  ctx.restore()
+  ctx.lineWidth = r * 0.107
   ctx.stroke()
 }
 
@@ -221,6 +246,7 @@ function drawSkipButton(ctx: CanvasRenderingContext2D, W: number) {
   buttonBase(ctx, cx, cy, r, u)
 
   ctx.save()
+  clipInsideRing(ctx, cx, cy, r, u)
   ctx.fillStyle = COLORS.buttonIcon
   ctx.strokeStyle = COLORS.buttonIcon
   ctx.lineJoin = 'round'
