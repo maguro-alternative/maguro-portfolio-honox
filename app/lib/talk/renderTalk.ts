@@ -48,6 +48,8 @@ export interface TalkScene {
   showMenu: boolean
   showSkip: boolean
   showNext: boolean
+  /** ネームプレート。地の文のように話者を出さない場面では外す */
+  showPlate: boolean
 }
 
 const COLORS = {
@@ -112,7 +114,7 @@ export function renderTalkScene(ctx: CanvasRenderingContext2D, scene: TalkScene)
 
   if (scene.showMenu) drawMenuButtons(ctx, W)
   if (scene.showSkip) drawSkipButton(ctx, W)
-  drawNamePlate(ctx, scene)
+  if (scene.showPlate) drawNamePlate(ctx, scene)
   drawDialogue(ctx, scene)
   if (scene.showNext) drawNextTriangle(ctx, W, H)
 }
@@ -327,9 +329,10 @@ const PLATE_TAIL: { row: 0 | 1 | 2; from: number; to: number }[] = [
 
 function drawNamePlate(ctx: CanvasRenderingContext2D, scene: TalkScene) {
   const { width: W, height: H } = scene
+  // 名前もロゴも空なら中身のないプレートになるが、表示するかどうかは showPlate に任せる
+  // （何も入れていないときに黙って消えると、消えたのか壊れたのか分からないため）。
   const name = scene.name.trim()
   const logo = scene.logo
-  if (!name && !logo) return
 
   const u = unit(W)
   const x = PLATE_LEFT * u

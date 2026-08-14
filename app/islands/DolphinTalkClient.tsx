@@ -64,6 +64,7 @@ const INITIAL = {
   logoId: 'kirishima' as string | null,
   text: '',
   aspect: '16:9' as TalkAspect,
+  showPlate: true,
   showMenu: true,
   showSkip: true,
   showNext: true,
@@ -102,6 +103,7 @@ export default function DolphinTalkClient() {
   const [logoId, setLogoId] = useState<string | null>(INITIAL.logoId)
   const [text, setText] = useState(INITIAL.text)
   const [aspect, setAspect] = useState<TalkAspect>(INITIAL.aspect)
+  const [showPlate, setShowPlate] = useState(INITIAL.showPlate)
   const [showMenu, setShowMenu] = useState(INITIAL.showMenu)
   const [showSkip, setShowSkip] = useState(INITIAL.showSkip)
   const [showNext, setShowNext] = useState(INITIAL.showNext)
@@ -131,6 +133,7 @@ export default function DolphinTalkClient() {
     logoId === INITIAL.logoId &&
     text === INITIAL.text &&
     aspect === INITIAL.aspect &&
+    showPlate === INITIAL.showPlate &&
     showMenu === INITIAL.showMenu &&
     showSkip === INITIAL.showSkip &&
     showNext === INITIAL.showNext
@@ -170,6 +173,7 @@ export default function DolphinTalkClient() {
       name,
       logo,
       lines,
+      showPlate,
       showMenu,
       showSkip,
       showNext,
@@ -181,6 +185,7 @@ export default function DolphinTalkClient() {
     logoRev,
     lines,
     aspect,
+    showPlate,
     showMenu,
     showSkip,
     showNext,
@@ -254,6 +259,7 @@ export default function DolphinTalkClient() {
     setLogoId(INITIAL.logoId)
     setText(INITIAL.text)
     setAspect(INITIAL.aspect)
+    setShowPlate(INITIAL.showPlate)
     setShowMenu(INITIAL.showMenu)
     setShowSkip(INITIAL.showSkip)
     setShowNext(INITIAL.showNext)
@@ -594,6 +600,7 @@ export default function DolphinTalkClient() {
           <div className="flex flex-wrap gap-4">
             {(
               [
+                ['ネームプレート', showPlate, setShowPlate],
                 ['メニューボタン', showMenu, setShowMenu],
                 ['スキップボタン', showSkip, setShowSkip],
                 ['送りマーク ▽', showNext, setShowNext],
