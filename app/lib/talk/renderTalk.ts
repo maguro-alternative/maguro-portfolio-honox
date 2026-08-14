@@ -436,7 +436,8 @@ const NEXT_CX = 1954
 const NEXT_FROM_BOTTOM = 90
 const NEXT_HALF_W = 21
 const NEXT_H = 24
-const NEXT_OUTLINE_W = 12.8
+// 実測は 12.4 相当だが、縮小表示だと重く見えるのでやや細めにしている。
+const NEXT_OUTLINE_W = 11
 
 function drawNextTriangle(ctx: CanvasRenderingContext2D, W: number, H: number) {
   const u = unit(W)
