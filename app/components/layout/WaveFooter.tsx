@@ -2,7 +2,8 @@
 export default function WaveFooter() {
   return (
     <div className="w-full">
-      <div className="relative -mb-1 h-24 overflow-hidden -z-10 pointer-events-none">
+      {/* 背景色を敷いたページでも波が隠れないよう、負の z-index は付けない */}
+      <div className="relative -mb-1 h-24 overflow-hidden pointer-events-none">
         <svg className="pointer-events-none absolute bottom-0 h-full w-[200%] animate-wave-slow" viewBox="0 0 1440 120" preserveAspectRatio="none">
           <path d="M0,100 C90,70 270,70 360,100 C450,130 630,130 720,100 C810,70 990,70 1080,100 C1170,130 1350,130 1440,100 L1440,120 L0,120 Z" fill="rgba(59,130,246,0.5)" />
         </svg>
