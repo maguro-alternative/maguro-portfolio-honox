@@ -1,9 +1,15 @@
 // ドルフィンウェーブの会話画面風 UI を Canvas に描く。
 // 寸法・配色はゲーム画面のスクリーンショット（描画領域 2463x1846 = 4:3）から実測した値を
 // REF_W 基準の比率として持ち、任意のキャンバスサイズにスケールして使う。
-import { drawEmblem, findTeam } from './teams'
-
 const REF_W = 2463
+
+/** 自然サイズを読める画像ソース（HTMLImageElement / canvas など）。 */
+export type TalkImageSource = CanvasImageSource & {
+  naturalWidth?: number
+  naturalHeight?: number
+  width: number
+  height: number
+}
 
 export const TALK_ASPECTS = {
   '16:9': 16 / 9,
@@ -21,7 +27,7 @@ export const MAX_LINES = 3
 
 export interface TalkLayer {
   id: string
-  image: CanvasImageSource & { naturalWidth?: number; naturalHeight?: number; width: number; height: number }
+  image: TalkImageSource
   /** キャンバス幅を 1 とした、中心からの横方向のずれ */
   offX: number
   /** キャンバス高さを 1 とした、中心からの縦方向のずれ */
@@ -36,7 +42,8 @@ export interface TalkScene {
   background: string
   layers: TalkLayer[]
   name: string
-  teamId: string | null
+  /** ネームプレート左に置くチームロゴ。読み込み前・未選択なら null */
+  logo: TalkImageSource | null
   lines: string[]
   showMenu: boolean
   showSkip: boolean
@@ -51,7 +58,6 @@ const COLORS = {
   buttonFace: '#ffffff',
   buttonRing: '#4d95f6',
   buttonIcon: '#5d84bb',
-  teamLabel: '#1c1c1c',
   nextOutline: '#0b1226',
 }
 
@@ -303,13 +309,9 @@ const PLATE_MIN_SOLID_W = 435
 // 実測: 左辺は上端 x=391 → 下端 x=385（高さ 65 に対して 6px）。右端の各段も同じ傾き。
 const PLATE_SHEAR = 6
 const LOGO_W = 76
+const LOGO_PAD_Y = 2
 const NAME_FONT = 47
 const NAME_BASELINE = 48 // プレート上辺から
-const TEAM_LABEL_FONT = 13
-const TEAM_LABEL_BASELINE = 61
-const EMBLEM_CX = 34
-const EMBLEM_CY = 23
-const EMBLEM_R = 21
 
 // 実線部の右に続く崩れ。網目ではなく、高さを 3 等分した各段が違う長さで階段状に伸び、
 // 少し離れた位置に独立したブロックが付く。実測値（実線部の右端からの相対 px）。
@@ -324,14 +326,14 @@ const PLATE_TAIL: { row: 0 | 1 | 2; from: number; to: number }[] = [
 function drawNamePlate(ctx: CanvasRenderingContext2D, scene: TalkScene) {
   const { width: W, height: H } = scene
   const name = scene.name.trim()
-  const team = findTeam(scene.teamId)
-  if (!name && !team) return
+  const logo = scene.logo
+  if (!name && !logo) return
 
   const u = unit(W)
   const x = PLATE_LEFT * u
   const y = H - PLATE_FROM_BOTTOM * u
   const h = PLATE_H * u
-  const logoW = team ? LOGO_W * u : 12 * u
+  const logoW = logo ? LOGO_W * u : 12 * u
 
   ctx.save()
   ctx.font = `900 ${NAME_FONT * u}px ${TALK_NAME_FONT_FAMILY}`
@@ -359,21 +361,18 @@ function drawNamePlate(ctx: CanvasRenderingContext2D, scene: TalkScene) {
   ctx.fill()
   ctx.restore()
 
-  if (team) {
-    drawEmblem(ctx, team, x + EMBLEM_CX * u, y + EMBLEM_CY * u, EMBLEM_R * u)
-    ctx.save()
-    ctx.fillStyle = COLORS.teamLabel
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'alphabetic'
-    let fs = TEAM_LABEL_FONT * u
-    ctx.font = `700 ${fs}px ${TALK_NAME_FONT_FAMILY}`
-    const maxW = (LOGO_W - 6) * u
-    if (ctx.measureText(team.label).width > maxW) {
-      fs = fs * (maxW / ctx.measureText(team.label).width)
-      ctx.font = `700 ${fs}px ${TALK_NAME_FONT_FAMILY}`
+  // ロゴはプレートの傾きに巻き込まれないよう、せん断の外で枠に収めて描く。
+  if (logo) {
+    const iw = logo.naturalWidth || logo.width
+    const ih = logo.naturalHeight || logo.height
+    if (iw && ih) {
+      const boxW = LOGO_W * u
+      const boxH = (PLATE_H - LOGO_PAD_Y * 2) * u
+      const scale = Math.min(boxW / iw, boxH / ih)
+      const dw = iw * scale
+      const dh = ih * scale
+      ctx.drawImage(logo, x + (boxW - dw) / 2, y + LOGO_PAD_Y * u + (boxH - dh) / 2, dw, dh)
     }
-    ctx.fillText(team.label, x + (LOGO_W / 2) * u, y + TEAM_LABEL_BASELINE * u)
-    ctx.restore()
   }
 
   if (name) {

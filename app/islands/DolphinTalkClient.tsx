@@ -7,7 +7,7 @@ import {
   type TalkAspect,
   type TalkLayer,
 } from '../lib/talk/renderTalk'
-import { talkTeams, teamIdForCharacterTeam } from '../lib/talk/teams'
+import { findLogo, logoIdForCharacterTeam, talkLogos } from '../lib/talk/logos'
 import { dolphinCharacters } from '../lib/nine/dolphinCharacters'
 
 interface PhotoLayer extends TalkLayer {
@@ -60,7 +60,7 @@ function useTalkFont() {
 // 初期値はリセット処理と共有する
 const INITIAL = {
   name: '',
-  teamId: 'kirishima' as string | null,
+  logoId: 'kirishima' as string | null,
   text: '',
   aspect: '16:9' as TalkAspect,
   background: '#8ec5e8',
@@ -99,7 +99,7 @@ export default function DolphinTalkClient() {
   const [layers, setLayers] = useState<PhotoLayer[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [name, setName] = useState(INITIAL.name)
-  const [teamId, setTeamId] = useState<string | null>(INITIAL.teamId)
+  const [logoId, setLogoId] = useState<string | null>(INITIAL.logoId)
   const [text, setText] = useState(INITIAL.text)
   const [aspect, setAspect] = useState<TalkAspect>(INITIAL.aspect)
   const [background, setBackground] = useState(INITIAL.background)
@@ -108,6 +108,9 @@ export default function DolphinTalkClient() {
   const [showNext, setShowNext] = useState(INITIAL.showNext)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  // ロゴ画像は読み込み後に再描画が要るので、キャッシュと再描画トリガーを持つ
+  const logoCache = useRef<Map<string, HTMLImageElement>>(new Map())
+  const [logoRev, setLogoRev] = useState(0)
   const pointers = useRef<Map<number, { x: number; y: number }>>(new Map())
   const gesture = useRef<{
     mode: 'drag' | 'pinch'
@@ -126,7 +129,7 @@ export default function DolphinTalkClient() {
   const isPristine =
     layers.length === 0 &&
     name === INITIAL.name &&
-    teamId === INITIAL.teamId &&
+    logoId === INITIAL.logoId &&
     text === INITIAL.text &&
     aspect === INITIAL.aspect &&
     background === INITIAL.background &&
@@ -141,13 +144,30 @@ export default function DolphinTalkClient() {
     canvas.height = size.height
     const ctx = canvas.getContext('2d')
     if (!ctx) return
+
+    // 未読み込みのロゴはここで読み込み、完了したら再描画させる
+    const cache = logoCache.current
+    let logo: HTMLImageElement | null = null
+    const def = findLogo(logoId)
+    if (def && cache) {
+      const cached = cache.get(def.id)
+      if (cached) {
+        logo = cached.complete && cached.naturalWidth > 0 ? cached : null
+      } else {
+        const img = new Image()
+        img.onload = () => setLogoRev((v) => v + 1)
+        img.src = def.src
+        cache.set(def.id, img)
+      }
+    }
+
     renderTalkScene(ctx, {
       width: size.width,
       height: size.height,
       background,
       layers,
       name,
-      teamId,
+      logo,
       lines,
       showMenu,
       showSkip,
@@ -156,7 +176,8 @@ export default function DolphinTalkClient() {
   }, [
     layers,
     name,
-    teamId,
+    logoId,
+    logoRev,
     lines,
     aspect,
     background,
@@ -230,7 +251,7 @@ export default function DolphinTalkClient() {
     })
     setSelectedId(null)
     setName(INITIAL.name)
-    setTeamId(INITIAL.teamId)
+    setLogoId(INITIAL.logoId)
     setText(INITIAL.text)
     setAspect(INITIAL.aspect)
     setBackground(INITIAL.background)
@@ -326,15 +347,15 @@ export default function DolphinTalkClient() {
     }, 'image/png')
   }
 
-  // 名前欄に公式キャラ名が入ったらチームを自動で合わせる
+  // 名前欄に公式キャラ名が入ったらロゴを自動で合わせる
   const handleNameInput = (value: string) => {
     setName(value)
     const hit = dolphinCharacters.find(
       (c) => c.name === value || c.name.replace(/\s/g, '') === value.replace(/\s/g, '')
     )
     if (hit) {
-      const id = teamIdForCharacterTeam(hit.team)
-      if (id) setTeamId(id)
+      const id = logoIdForCharacterTeam(hit.team)
+      if (id && findLogo(id)) setLogoId(id)
     }
   }
 
@@ -421,21 +442,38 @@ export default function DolphinTalkClient() {
           <label className="block">
             <span className="text-xs font-semibold text-slate-600">チーム（ロゴ）</span>
             <select
-              value={teamId ?? ''}
+              value={logoId ?? ''}
               onChange={(e) =>
-                setTeamId((e.currentTarget as HTMLSelectElement).value || null)
+                setLogoId((e.currentTarget as HTMLSelectElement).value || null)
               }
               className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
             >
-              <option value="" selected={teamId === null}>
+              <option value="" selected={logoId === null}>
                 ロゴなし
               </option>
-              {talkTeams.map((t) => (
-                <option key={t.id} value={t.id} selected={teamId === t.id}>
-                  {t.label}
+              {talkLogos.map((l) => (
+                <option key={l.id} value={l.id} selected={logoId === l.id}>
+                  {l.label}
                 </option>
               ))}
             </select>
+            {talkLogos.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {talkLogos.map((l) => (
+                  <button
+                    key={l.id}
+                    onClick={() => setLogoId(l.id)}
+                    title={l.label}
+                    aria-label={l.label}
+                    className={`flex h-11 w-11 items-center justify-center rounded-md border bg-white p-1 ${
+                      logoId === l.id ? 'border-indigo-400 ring-2 ring-indigo-200' : 'border-slate-200'
+                    }`}
+                  >
+                    <img src={l.src} alt="" className="max-h-full max-w-full object-contain" />
+                  </button>
+                ))}
+              </div>
+            )}
           </label>
 
           <label className="block">
