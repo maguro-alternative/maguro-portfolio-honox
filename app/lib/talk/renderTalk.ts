@@ -117,6 +117,7 @@ export function renderTalkScene(ctx: CanvasRenderingContext2D, scene: TalkScene)
   if (scene.showPlate) drawNamePlate(ctx, scene)
   drawDialogue(ctx, scene)
   if (scene.showNext) drawNextTriangle(ctx, W, H)
+  drawCredit(ctx, W, H)
 }
 
 // ---------------------------------------------------------------- 上部ボタン
@@ -461,5 +462,33 @@ function drawNextTriangle(ctx: CanvasRenderingContext2D, W: number, H: number) {
   ctx.closePath()
   ctx.stroke()
   ctx.fill()
+  ctx.restore()
+}
+
+// ------------------------------------------------------- メーカーのクレジット
+
+// このツールで作った画像だと分かるよう、右下に焼き込む。
+// 送りマーク（下端から 90、x=1954 付近）とぶつからない位置に置いている。
+const CREDIT_TEXT = 'maguro-alternative.com/talk/dolphin'
+const CREDIT_FONT = 22
+const CREDIT_RIGHT = 28
+const CREDIT_BOTTOM = 22
+
+function drawCredit(ctx: CanvasRenderingContext2D, W: number, H: number) {
+  const u = unit(W)
+  const fs = CREDIT_FONT * u
+  ctx.save()
+  ctx.font = `700 ${fs}px ${TALK_DIALOGUE_FONT_FAMILY}`
+  ctx.textAlign = 'right'
+  ctx.textBaseline = 'alphabetic'
+  ctx.lineJoin = 'round'
+  ctx.miterLimit = 2
+  ctx.lineWidth = fs * 0.3
+  ctx.strokeStyle = 'rgba(0,0,0,0.45)'
+  ctx.fillStyle = 'rgba(255,255,255,0.92)'
+  const x = W - CREDIT_RIGHT * u
+  const y = H - CREDIT_BOTTOM * u
+  ctx.strokeText(CREDIT_TEXT, x, y)
+  ctx.fillText(CREDIT_TEXT, x, y)
   ctx.restore()
 }
