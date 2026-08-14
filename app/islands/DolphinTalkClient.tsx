@@ -418,7 +418,6 @@ export default function DolphinTalkClient() {
 
         <div className="pt-4">
         <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="text-sm font-bold text-slate-700">テキスト</h2>
 
           <label className="block">
             <span className="text-xs font-semibold text-slate-600">名前</span>
