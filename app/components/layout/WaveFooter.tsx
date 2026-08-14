@@ -15,7 +15,7 @@ export default function WaveFooter() {
       </div>
       <div className="flex flex-col items-center justify-center gap-1 bg-blue-500 py-3 relative z-10 pointer-events-auto select-text">
         <p className="pointer-events-auto text-center text-sm text-white">
-          &copy; 2025 Maguro Alternative. All rights reserved.
+          &copy; 2026 Maguro Alternative. All rights reserved.
         </p>
         <p className="pointer-events-auto text-center text-sm text-white">
           作者のTwitter:{' '}
