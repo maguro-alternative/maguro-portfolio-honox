@@ -212,30 +212,40 @@ function drawAutoIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: 
 
 function drawHideIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
   // 斜めに傾いた「=」に取り消し線が入った、ウィンドウ非表示のアイコン。
-  // 実測: バーは太さ 0.30r、中心が cy±0.192r（間隔 0.084r）。
-  const w = r * 0.575
-  const th = r * 0.3
-  const skew = r * 0.16
-  for (const dy of [-r * 0.192, r * 0.192]) {
+  // 以下はボタン外径が 60 のときの実測座標で、s がキャンバス座標への係数。
+  // 棒は傾き 4 の平行四辺形 2 本。取り消し線は x = 2.5 - y の 45 度の線で、
+  // 白い抜けはその左下側にだけ入る（右側は棒と繋がったまま）。
+  const s = r / BTN_R
+  const SKEW = 4
+  const X_L = -31
+  const X_R = 37
+
+  const bar = (yTop: number, yBottom: number) => {
     ctx.beginPath()
-    ctx.moveTo(cx - w + skew, cy + dy - th / 2)
-    ctx.lineTo(cx + w, cy + dy - th / 2)
-    ctx.lineTo(cx + w - skew, cy + dy + th / 2)
-    ctx.lineTo(cx - w, cy + dy + th / 2)
+    ctx.moveTo(cx + X_L * s, cy + yTop * s)
+    ctx.lineTo(cx + X_R * s, cy + yTop * s)
+    ctx.lineTo(cx + (X_R - SKEW) * s, cy + yBottom * s)
+    ctx.lineTo(cx + (X_L - SKEW) * s, cy + yBottom * s)
     ctx.closePath()
     ctx.fill()
   }
-  // 取り消し線。実物はバーとの間に白い隙間が入るので、先に白で太く引いてから重ねる。
-  ctx.beginPath()
-  ctx.moveTo(cx - r * 0.567, cy + r * 0.567)
-  ctx.lineTo(cx + r * 0.567, cy - r * 0.567)
+  bar(-20, -1)
+  bar(3, 22)
+
+  // 水平方向の太さを指定して 45 度の線を引く（dx は水平方向のずらし量）。
+  const slash = (dx: number, horizontalWidth: number, color: string) => {
+    ctx.strokeStyle = color
+    ctx.lineWidth = (horizontalWidth / Math.SQRT2) * s
+    ctx.beginPath()
+    ctx.moveTo(cx + (2.5 + 35 + dx) * s, cy - 35 * s)
+    ctx.lineTo(cx + (2.5 - 35 + dx) * s, cy + 35 * s)
+    ctx.stroke()
+  }
   ctx.save()
-  ctx.strokeStyle = COLORS.buttonFace
-  ctx.lineWidth = r * 0.227
-  ctx.stroke()
+  ctx.lineCap = 'butt'
+  slash(-7, 4, COLORS.buttonFace)
+  slash(0, 10, COLORS.buttonIcon)
   ctx.restore()
-  ctx.lineWidth = r * 0.107
-  ctx.stroke()
 }
 
 function drawSkipButton(ctx: CanvasRenderingContext2D, W: number) {
