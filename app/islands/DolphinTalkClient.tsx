@@ -439,42 +439,41 @@ export default function DolphinTalkClient() {
             </datalist>
           </label>
 
-          <label className="block">
-            <span className="text-xs font-semibold text-slate-600">チーム（ロゴ）</span>
-            <select
-              value={logoId ?? ''}
-              onChange={(e) =>
-                setLogoId((e.currentTarget as HTMLSelectElement).value || null)
-              }
-              className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-            >
-              <option value="" selected={logoId === null}>
-                ロゴなし
-              </option>
+          <div>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-xs font-semibold text-slate-600">チーム（ロゴ）</span>
+              <span className="truncate text-xs text-slate-400">
+                {findLogo(logoId)?.label ?? 'ロゴなし'}
+              </span>
+            </div>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              <button
+                onClick={() => setLogoId(null)}
+                title="ロゴなし"
+                aria-label="ロゴなし"
+                aria-pressed={logoId === null}
+                className={`flex h-11 w-11 items-center justify-center rounded-md border bg-white text-[10px] font-semibold text-slate-500 ${
+                  logoId === null ? 'border-indigo-400 ring-2 ring-indigo-200' : 'border-slate-200'
+                }`}
+              >
+                なし
+              </button>
               {talkLogos.map((l) => (
-                <option key={l.id} value={l.id} selected={logoId === l.id}>
-                  {l.label}
-                </option>
+                <button
+                  key={l.id}
+                  onClick={() => setLogoId(l.id)}
+                  title={l.label}
+                  aria-label={l.label}
+                  aria-pressed={logoId === l.id}
+                  className={`flex h-11 w-11 items-center justify-center rounded-md border bg-white p-1 ${
+                    logoId === l.id ? 'border-indigo-400 ring-2 ring-indigo-200' : 'border-slate-200'
+                  }`}
+                >
+                  <img src={l.src} alt="" className="max-h-full max-w-full object-contain" />
+                </button>
               ))}
-            </select>
-            {talkLogos.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {talkLogos.map((l) => (
-                  <button
-                    key={l.id}
-                    onClick={() => setLogoId(l.id)}
-                    title={l.label}
-                    aria-label={l.label}
-                    className={`flex h-11 w-11 items-center justify-center rounded-md border bg-white p-1 ${
-                      logoId === l.id ? 'border-indigo-400 ring-2 ring-indigo-200' : 'border-slate-200'
-                    }`}
-                  >
-                    <img src={l.src} alt="" className="max-h-full max-w-full object-contain" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </label>
+            </div>
+          </div>
 
           <label className="block">
             <span className="text-xs font-semibold text-slate-600">
