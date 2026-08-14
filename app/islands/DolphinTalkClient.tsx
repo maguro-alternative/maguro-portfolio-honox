@@ -17,7 +17,7 @@ interface PhotoLayer extends TalkLayer {
 
 const FONT_LINK_ID = 'dolphin-talk-font'
 const FONT_HREF =
-  'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;800;900&display=swap'
+  'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&display=swap'
 
 /** 写真で覆われない部分の色。 */
 const BACKGROUND = '#8ec5e8'
@@ -49,7 +49,6 @@ function ensureTalkFont(): Promise<void> {
   const sample = 'あアｱ亜A1！'
   talkFontPromise = Promise.all([
     document.fonts.load(`700 54px "Noto Sans JP"`, sample),
-    document.fonts.load(`800 54px "Noto Sans JP"`, sample),
     document.fonts.load(`900 54px "Noto Sans JP"`, sample),
   ]).then(
     () => undefined,
