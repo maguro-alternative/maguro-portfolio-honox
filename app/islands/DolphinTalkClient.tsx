@@ -19,6 +19,9 @@ const FONT_LINK_ID = 'dolphin-talk-font'
 const FONT_HREF =
   'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;800;900&display=swap'
 
+/** 写真で覆われない部分の色。 */
+const BACKGROUND = '#8ec5e8'
+
 let talkFontPromise: Promise<void> | null = null
 
 /**
@@ -61,7 +64,6 @@ const INITIAL = {
   logoId: 'kirishima' as string | null,
   text: '',
   aspect: '16:9' as TalkAspect,
-  background: '#8ec5e8',
   showMenu: true,
   showSkip: true,
   showNext: true,
@@ -100,7 +102,6 @@ export default function DolphinTalkClient() {
   const [logoId, setLogoId] = useState<string | null>(INITIAL.logoId)
   const [text, setText] = useState(INITIAL.text)
   const [aspect, setAspect] = useState<TalkAspect>(INITIAL.aspect)
-  const [background, setBackground] = useState(INITIAL.background)
   const [showMenu, setShowMenu] = useState(INITIAL.showMenu)
   const [showSkip, setShowSkip] = useState(INITIAL.showSkip)
   const [showNext, setShowNext] = useState(INITIAL.showNext)
@@ -130,7 +131,6 @@ export default function DolphinTalkClient() {
     logoId === INITIAL.logoId &&
     text === INITIAL.text &&
     aspect === INITIAL.aspect &&
-    background === INITIAL.background &&
     showMenu === INITIAL.showMenu &&
     showSkip === INITIAL.showSkip &&
     showNext === INITIAL.showNext
@@ -165,7 +165,7 @@ export default function DolphinTalkClient() {
     renderTalkScene(ctx, {
       width: size.width,
       height: size.height,
-      background,
+      background: BACKGROUND,
       layers,
       name,
       logo,
@@ -181,7 +181,6 @@ export default function DolphinTalkClient() {
     logoRev,
     lines,
     aspect,
-    background,
     showMenu,
     showSkip,
     showNext,
@@ -255,7 +254,6 @@ export default function DolphinTalkClient() {
     setLogoId(INITIAL.logoId)
     setText(INITIAL.text)
     setAspect(INITIAL.aspect)
-    setBackground(INITIAL.background)
     setShowMenu(INITIAL.showMenu)
     setShowSkip(INITIAL.showSkip)
     setShowNext(INITIAL.showNext)
