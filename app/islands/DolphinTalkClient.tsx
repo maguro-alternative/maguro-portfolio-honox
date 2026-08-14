@@ -8,6 +8,7 @@ import {
   type TalkLayer,
 } from '../lib/talk/renderTalk'
 import { findLogo, logoIdForCharacterTeam, talkLogos } from '../lib/talk/logos'
+import WaveFooter from '../components/layout/WaveFooter'
 import { dolphinCharacters } from '../lib/nine/dolphinCharacters'
 
 interface PhotoLayer extends TalkLayer {
@@ -610,14 +611,15 @@ export default function DolphinTalkClient() {
           </div>
         </section>
 
+        {/* 権利表記はフッターにあるので、ここはツール固有の注意書きだけにする */}
         <p className="mt-6 text-xs leading-relaxed text-slate-500">
-          本ツールは個人が作成した非公式のファンメイドです。ドルフィンウェーブの権利は
-          &copy;Marvelous Inc. &copy;HONEY PARADE GAMES Inc. に帰属します。
+          本ツールは個人が作成した非公式のファンメイドです。
           読み込んだ画像はブラウザ内だけで処理され、サーバーには送信されません。
           生成した画像の取り扱いは、各権利者のガイドラインに従ってください。
         </p>
         </div>
       </main>
+      <WaveFooter />
     </div>
   )
 }
