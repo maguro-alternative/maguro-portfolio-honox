@@ -248,24 +248,33 @@ function drawSkipButton(ctx: CanvasRenderingContext2D, W: number) {
   ctx.save()
   clipInsideRing(ctx, cx, cy, r, u)
   ctx.fillStyle = COLORS.buttonIcon
-  ctx.strokeStyle = COLORS.buttonIcon
-  ctx.lineJoin = 'round'
-  const s = r * 0.5
-  const ox = cx - r * 0.16
-  ctx.beginPath()
-  ctx.moveTo(ox - s * 0.9, cy - s)
-  ctx.lineTo(ox + s * 0.35, cy)
-  ctx.lineTo(ox - s * 0.9, cy + s)
-  ctx.lineTo(ox - s * 0.2, cy + s)
-  ctx.lineTo(ox + s * 1.05, cy)
-  ctx.lineTo(ox - s * 0.2, cy - s)
-  ctx.closePath()
-  ctx.fill()
-  ctx.lineWidth = r * 0.12
-  ctx.beginPath()
-  ctx.moveTo(cx + r * 0.44, cy - s)
-  ctx.lineTo(cx + r * 0.44, cy + s)
-  ctx.stroke()
+  // 「≫|」は水平幅 18 の 45 度の平行四辺形 2 枚と縦棒でできている。
+  // 以下はボタン外径が 60 のときの実測座標で、s がキャンバス座標への係数。
+  const s = r / BTN_R
+  const quad = (points: [number, number][]) => {
+    ctx.beginPath()
+    points.forEach(([px, py], i) => {
+      const X = cx + px * s
+      const Y = cy + py * s
+      if (i === 0) ctx.moveTo(X, Y)
+      else ctx.lineTo(X, Y)
+    })
+    ctx.closePath()
+    ctx.fill()
+  }
+  quad([
+    [-21, -24],
+    [-3, -24],
+    [23, 2],
+    [5, 2],
+  ])
+  quad([
+    [5, 2],
+    [23, 2],
+    [-3, 28],
+    [-21, 28],
+  ])
+  ctx.fillRect(cx + 20.5 * s, cy - 24.5 * s, 4 * s, 53 * s)
   ctx.restore()
 }
 
