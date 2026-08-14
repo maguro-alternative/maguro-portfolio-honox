@@ -61,8 +61,9 @@ const COLORS = {
   nextOutline: '#0b1226',
 }
 
-// 公式サイト（hpgames.jp/dolphin-wave）の html は font-family:"Noto Sans JP",sans-serif、
-// キャラ名の .chara-mv__name は font-weight:900。名前まわりはこれに合わせる。
+// 公式サイト（hpgames.jp/dolphin-wave）の html は font-family:"Noto Sans JP",sans-serif。
+// キャラ名の .chara-mv__name は font-weight:900 だが、ゲーム内プレートの見た目に対しては
+// Noto Sans JP Black が重く見えるため、名前は 800 で描いている。
 export const TALK_NAME_FONT_FAMILY = '"Noto Sans JP", sans-serif'
 
 // 公式のお知らせページ（webview-dolphin.marv.jp）の body で使われているスタック。
@@ -336,7 +337,7 @@ function drawNamePlate(ctx: CanvasRenderingContext2D, scene: TalkScene) {
   const logoW = logo ? LOGO_W * u : 12 * u
 
   ctx.save()
-  ctx.font = `900 ${NAME_FONT * u}px ${TALK_NAME_FONT_FAMILY}`
+  ctx.font = `800 ${NAME_FONT * u}px ${TALK_NAME_FONT_FAMILY}`
   const nameW = name ? ctx.measureText(name).width : 0
   ctx.restore()
 
@@ -378,7 +379,7 @@ function drawNamePlate(ctx: CanvasRenderingContext2D, scene: TalkScene) {
   if (name) {
     ctx.save()
     ctx.fillStyle = COLORS.nameText
-    ctx.font = `900 ${NAME_FONT * u}px ${TALK_NAME_FONT_FAMILY}`
+    ctx.font = `800 ${NAME_FONT * u}px ${TALK_NAME_FONT_FAMILY}`
     ctx.textAlign = 'left'
     ctx.textBaseline = 'alphabetic'
     ctx.fillText(name, x + logoW + 2 * u, y + NAME_BASELINE * u)

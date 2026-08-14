@@ -17,44 +17,42 @@ interface PhotoLayer extends TalkLayer {
 
 const FONT_LINK_ID = 'dolphin-talk-font'
 const FONT_HREF =
-  'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&display=swap'
+  'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;800;900&display=swap'
 
-/** Canvas は Web フォントの読み込み完了を待たないと素の sans-serif で焼き込まれる。 */
-function useTalkFont() {
-  const [ready, setReady] = useState(false)
+let talkFontPromise: Promise<void> | null = null
 
-  useEffect(() => {
-    let cancelled = false
-    if (!document.getElementById(FONT_LINK_ID)) {
-      const preconnect = document.createElement('link')
-      preconnect.rel = 'preconnect'
-      preconnect.href = 'https://fonts.gstatic.com'
-      preconnect.crossOrigin = ''
-      document.head.appendChild(preconnect)
+/**
+ * Canvas は Web フォントの読み込み完了を待たないと、素のフォールバック書体で焼き込まれる。
+ * マウント時だけの useEffect は hono/jsx で走らないことがあるため、
+ * 実際に描画する側（キャンバスの effect）から毎回呼べる形にしている。
+ */
+function ensureTalkFont(): Promise<void> {
+  if (talkFontPromise) return talkFontPromise
 
-      const link = document.createElement('link')
-      link.id = FONT_LINK_ID
-      link.rel = 'stylesheet'
-      link.href = FONT_HREF
-      document.head.appendChild(link)
-    }
+  if (!document.getElementById(FONT_LINK_ID)) {
+    const preconnect = document.createElement('link')
+    preconnect.rel = 'preconnect'
+    preconnect.href = 'https://fonts.gstatic.com'
+    preconnect.crossOrigin = ''
+    document.head.appendChild(preconnect)
 
-    const sample = 'あアｱ亜A1！'
-    Promise.all([
-      document.fonts.load(`700 54px "Noto Sans JP"`, sample),
-      document.fonts.load(`900 54px "Noto Sans JP"`, sample),
-    ])
-      .catch(() => undefined)
-      .then(() => {
-        if (!cancelled) setReady(true)
-      })
+    const link = document.createElement('link')
+    link.id = FONT_LINK_ID
+    link.rel = 'stylesheet'
+    link.href = FONT_HREF
+    document.head.appendChild(link)
+  }
 
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  return ready
+  const sample = 'あアｱ亜A1！'
+  talkFontPromise = Promise.all([
+    document.fonts.load(`700 54px "Noto Sans JP"`, sample),
+    document.fonts.load(`800 54px "Noto Sans JP"`, sample),
+    document.fonts.load(`900 54px "Noto Sans JP"`, sample),
+  ]).then(
+    () => undefined,
+    () => undefined
+  )
+  return talkFontPromise
 }
 
 // 初期値はリセット処理と共有する
@@ -94,7 +92,7 @@ function loadFile(file: File): Promise<PhotoLayer> {
 }
 
 export default function DolphinTalkClient() {
-  const fontReady = useTalkFont()
+  const [fontReady, setFontReady] = useState(false)
 
   const [layers, setLayers] = useState<PhotoLayer[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -144,6 +142,9 @@ export default function DolphinTalkClient() {
     canvas.height = size.height
     const ctx = canvas.getContext('2d')
     if (!ctx) return
+
+    // Web フォントの読み込みもここから確実に走らせ、完了したら再描画させる
+    if (!fontReady) void ensureTalkFont().then(() => setFontReady(true))
 
     // 未読み込みのロゴはここで読み込み、完了したら再描画させる
     const cache = logoCache.current
@@ -426,17 +427,12 @@ export default function DolphinTalkClient() {
             <span className="text-xs font-semibold text-slate-600">名前</span>
             <input
               type="text"
-              list="dolphin-character-names"
               value={name}
               placeholder="小針"
+              autocomplete="off"
               onInput={(e) => handleNameInput((e.currentTarget as HTMLInputElement).value)}
               className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
             />
-            <datalist id="dolphin-character-names">
-              {dolphinCharacters.map((c) => (
-                <option key={c.slug} value={c.name} />
-              ))}
-            </datalist>
           </label>
 
           <div>
@@ -597,17 +593,6 @@ export default function DolphinTalkClient() {
               ))}
             </div>
           </div>
-
-          <label className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-slate-600">背景色</span>
-            <input
-              type="color"
-              value={background}
-              onInput={(e) => setBackground((e.currentTarget as HTMLInputElement).value)}
-              className="h-8 w-14 rounded border border-slate-300"
-            />
-            <span className="text-xs text-slate-400">写真で覆われない部分の色</span>
-          </label>
 
           <div className="flex flex-wrap gap-4">
             {(
