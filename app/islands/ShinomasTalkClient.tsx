@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'hono/jsx'
+import MakerTerms from '../components/layout/MakerTerms'
 import {
   MAX_LINES,
   SHINOMAS_FONT_FAMILY,
@@ -238,12 +239,8 @@ export default function ShinomasTalkClient() {
             theme={shinomasTheme}
           />
 
-          {/* 権利表記はフッターにあるので、ここはツール固有の注意書きだけにする */}
-          <p className="mt-6 text-xs leading-relaxed text-slate-400">
-            本ツールは個人が作成した非公式のファンメイドです。
-            読み込んだ画像はブラウザ内だけで処理され、サーバーには送信されません。
-            生成した画像の取り扱いは、各権利者のガイドラインに従ってください。
-          </p>
+          {/* 権利表記はフッターにあるので、ここは利用規約だけ置く */}
+          <MakerTerms className="border-slate-700 bg-slate-800/50 text-slate-400" />
         </div>
       </main>
       <SiteFooter />

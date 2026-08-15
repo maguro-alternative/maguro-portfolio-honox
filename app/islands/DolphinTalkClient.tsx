@@ -8,6 +8,7 @@ import {
 } from '../lib/talk/renderTalk'
 import { findLogo, logoIdForCharacterTeam, talkLogos } from '../lib/talk/logos'
 import WaveFooter from '../components/layout/WaveFooter'
+import MakerTerms from '../components/layout/MakerTerms'
 import { dolphinCharacters } from '../lib/nine/dolphinCharacters'
 import { useTalkEditor } from '../features/talk/useTalkEditor'
 import { useCanvasGesture } from '../features/talk/useCanvasGesture'
@@ -252,12 +253,8 @@ export default function DolphinTalkClient() {
           theme={dolphinTheme}
         />
 
-        {/* 権利表記はフッターにあるので、ここはツール固有の注意書きだけにする */}
-        <p className="mt-6 text-xs leading-relaxed text-slate-500">
-          本ツールは個人が作成した非公式のファンメイドです。
-          読み込んだ画像はブラウザ内だけで処理され、サーバーには送信されません。
-          生成した画像の取り扱いは、各権利者のガイドラインに従ってください。
-        </p>
+        {/* 権利表記はフッターにあるので、ここは利用規約だけ置く */}
+        <MakerTerms className="border-slate-200 bg-white text-slate-500" />
         </div>
       </main>
       <WaveFooter />
