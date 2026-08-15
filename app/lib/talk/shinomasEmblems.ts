@@ -1,6 +1,8 @@
-// 名前欄の左に添える学園エンブレム。public/talk/shinomas/cmn_sch_s*.png をそのまま使う。
-// 番号と組織の対応は btl_sch* の幟画像から同定したもの。
-// 05 だけ幟が未実装で同定できていないため、番号のまま出している。
+// 名前欄の左に添える学園エンブレム。
+// public/talk/shinomas/ に画像を置くだけで選択肢が増える（ドルフィン版の logos.ts と同じ規則）。
+// ファイル名の列挙はビルド時（vite-public-listing-plugin.ts）に済ませてあり、
+// 画像そのものは public のパスからそのまま配信される。
+import { files } from 'virtual:shinomas-emblems'
 
 const DIR = '/talk/shinomas'
 
@@ -10,28 +12,72 @@ export interface ShinomasEmblem {
   src: string
 }
 
-/** 抽出できたエンブレムを番号順に並べたもの。 */
-const ENTRIES: [string, string][] = [
-  ['s01', '国立半蔵学院'],
-  ['s02', '焔紅蓮隊'],
-  ['s03', '死塾月閃女学館'],
-  ['s04', '秘立蛇女子学園'],
-  ['s05', 'エンブレム05（不明）'],
-  ['s06', 'ゾディアック星導会'],
-  ['s07', '遠野天狗ノ忍衆'],
-  ['s08', '巫神楽'],
-  ['s11', '死塾月閃女学館 中等部'],
-  ['s13', 'カグラ千年祭'],
-  ['s14', '大会運営委員'],
-  ['s23', 'New wave 連合'],
-  ['s26', '天城封結衆'],
+/**
+ * 実機での並び順。ゲーム内のエンブレム番号（cmn_sch_s01〜s26）に対応する。
+ * ここに無い id は後ろに回る。
+ * s05 は幟が未実装で組織を同定できなかったため入れていない。
+ */
+const ORDER = [
+  'hanzo', // s01
+  'homura', // s02
+  'gessen', // s03
+  'hebijo', // s04
+  'zodiac', // s06
+  'tono-tengu', // s07
+  'mikagura', // s08
+  'gessen-chutobu', // s11
+  'kagura-sennensai', // s13
+  'taikai-unei', // s14
+  'new-wave', // s23
+  'amagi', // s26
 ]
 
-export const shinomasEmblems: ShinomasEmblem[] = ENTRIES.map(([id, label]) => ({
-  id,
-  label,
-  src: `${DIR}/cmn_sch_${id}.png`,
-}))
+/**
+ * ファイル名から起こせない表記を補う。ここに無い id はファイル名がそのまま出る。
+ * 組織名は btl_sch* の幟画像から同定したもの。
+ */
+const LABELS: Record<string, string> = {
+  hanzo: '国立半蔵学院',
+  homura: '焔紅蓮隊',
+  gessen: '死塾月閃女学館',
+  hebijo: '秘立蛇女子学園',
+  zodiac: 'ゾディアック星導会',
+  'tono-tengu': '遠野天狗ノ忍衆',
+  mikagura: '巫神楽',
+  'gessen-chutobu': '死塾月閃女学館 中等部',
+  'kagura-sennensai': 'カグラ千年祭',
+  'taikai-unei': '大会運営委員',
+  'new-wave': 'New wave 連合',
+  amagi: '天城封結衆',
+}
+
+/**
+ * ファイル名 → id。
+ * 「logo_」「logo-」の接頭辞、`.svg.png` のような多重拡張子、記号や大小文字の揺れを吸収する。
+ */
+function toId(file: string) {
+  return file
+    .replace(/^logo[-_]/i, '')
+    .replace(/(\.[a-z0-9]+)+$/i, '')
+    .replace(/[_\s]+/g, '-')
+    .replace(/[^0-9a-z-]/gi, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase()
+    .replace(/-logo$/, '')
+}
+
+export const shinomasEmblems: ShinomasEmblem[] = files
+  .map((file) => {
+    const id = toId(file)
+    return { id, label: LABELS[id] ?? id, src: `${DIR}/${file}` }
+  })
+  .sort((a, b) => {
+    const ai = ORDER.indexOf(a.id)
+    const bi = ORDER.indexOf(b.id)
+    if (ai !== bi) return (ai < 0 ? ORDER.length : ai) - (bi < 0 ? ORDER.length : bi)
+    return a.label.localeCompare(b.label, 'ja')
+  })
 
 export function findShinomasEmblem(id: string | null): ShinomasEmblem | null {
   if (!id) return null

@@ -22,14 +22,6 @@ const FONT_HREF =
 /** 写真で覆われない部分の色。参照スクショも黒背景。 */
 const BACKGROUND = '#000000'
 
-const WINDOW_SRC = '/talk/shinomas/cmn_mes_win01.png'
-const NEXT_SRC = '/talk/shinomas/cmn_next01.png'
-/** 早送りボタンの状態。左半分が `>>` か `⏸` かだけが違う */
-const ATLAS_SRC = {
-  play: '/talk/shinomas/adv_btn01.png',
-  pause: '/talk/shinomas/adv_btn02.png',
-} as const
-
 let talkFontPromise: Promise<void> | null = null
 
 /**
@@ -67,8 +59,9 @@ function ensureTalkFont(): Promise<void> {
   return talkFontPromise
 }
 
-// UI 素材はページをまたいで使い回す。読み込み完了で再描画させるため、
+// エンブレム画像はページをまたいで使い回す。読み込み完了で再描画させるため、
 // 呼び出し側から再描画用のコールバックを受け取る。
+// （ウィンドウ・ボタン・▽ は画像を使わず renderShinomasTalk 側で描いている）
 const spriteCache = new Map<string, HTMLImageElement>()
 
 function getSprite(src: string | null, onLoad: () => void): HTMLImageElement | null {
@@ -85,7 +78,7 @@ function getSprite(src: string | null, onLoad: () => void): HTMLImageElement | n
 // 初期値はリセット処理と共有する
 const INITIAL = {
   name: '',
-  emblemId: 's01' as string | null,
+  emblemId: 'hanzo' as string | null,
   text: '',
   aspect: '16:9' as TalkAspect,
   showName: true,
@@ -186,13 +179,11 @@ export default function ShinomasTalkClient() {
       name,
       emblem: getSprite(emblem?.src ?? null, bump),
       lines,
-      windowImage: getSprite(WINDOW_SRC, bump),
-      buttonAtlas: getSprite(paused ? ATLAS_SRC.pause : ATLAS_SRC.play, bump),
-      nextImage: getSprite(NEXT_SRC, bump),
       showName,
       showLog,
       showSkip,
       showNext,
+      paused,
     })
   }, [
     layers,

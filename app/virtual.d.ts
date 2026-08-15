@@ -3,3 +3,8 @@
 declare module 'virtual:talk-logos' {
   export const files: string[]
 }
+
+// 同上。こちらは public/talk/shinomas/ の学園エンブレム。
+declare module 'virtual:shinomas-emblems' {
+  export const files: string[]
+}
