@@ -471,7 +471,7 @@ export default function ShinomasTalkClient() {
               <textarea
                 rows={3}
                 value={text}
-                placeholder={'ジオラマに使える衣装やシノビの数も増えているし\n先生からの力作を楽しみにしているぞ。'}
+                placeholder={'先生からの力作、お待ちしてます！'}
                 onInput={(e) => {
                   const v = (e.currentTarget as HTMLTextAreaElement).value
                   setText(v.split('\n').slice(0, MAX_LINES).join('\n'))
