@@ -9,7 +9,7 @@ export default function MakerTerms({ className = '' }: { className?: string }) {
       <h2 className="text-sm font-bold">利用規約</h2>
       <ol className="mt-2 list-decimal space-y-1.5 pl-4">
         <li>
-          本ツールは個人が制作した非公式のファンツールです。作品の権利者および運営とは一切関係ありません。
+          本ツールは個人が制作した非公式のファンツールです。作品の権利者および運営とは一切関係ありません。また、ご利用の際には本規約に同意したものとみなします。
         </li>
         <li>作品名・ロゴ・意匠などの権利は、各権利者に帰属します。</li>
         <li>
