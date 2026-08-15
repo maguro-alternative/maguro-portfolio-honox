@@ -48,3 +48,4 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev
 
 - `app/islands/` 以外でクライアントサイドの状態管理をしない
 - `wrangler.jsonc` に秘密情報を直接書かない（Secrets を使う）
+- コードのコメントにはwhy notのみを書く。
