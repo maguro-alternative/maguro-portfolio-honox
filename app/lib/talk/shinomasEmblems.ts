@@ -15,7 +15,7 @@ export interface ShinomasEmblem {
 /**
  * 実機での並び順。ゲーム内のエンブレム番号（cmn_sch_s01〜s26）に対応する。
  * ここに無い id は後ろに回る。
- * s05 は幟が未実装で組織を同定できなかったため入れていない。
+ * s05（組織を同定できなかったもの）と s13（カグラ千年祭）は外してある。
  */
 const ORDER = [
   'hanzo', // s01
@@ -26,7 +26,6 @@ const ORDER = [
   'tono-tengu', // s07
   'mikagura', // s08
   'gessen-chutobu', // s11
-  'kagura-sennensai', // s13
   'taikai-unei', // s14
   'new-wave', // s23
   'amagi', // s26
@@ -45,7 +44,6 @@ const LABELS: Record<string, string> = {
   'tono-tengu': '遠野天狗ノ忍衆',
   mikagura: '巫神楽',
   'gessen-chutobu': '死塾月閃女学館 中等部',
-  'kagura-sennensai': 'カグラ千年祭',
   'taikai-unei': '大会運営委員',
   'new-wave': 'New wave 連合',
   amagi: '天城封結衆',
