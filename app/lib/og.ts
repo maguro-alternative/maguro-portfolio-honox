@@ -360,3 +360,158 @@ export function buildTalkOgSvg({ title, name, lines, footer }: TalkOgOptions): s
 </svg>
 `
 }
+
+// ===== shinomas talk（シノマス セリフメーカー）用 OG =====
+// 実機の寸法（1920 幅基準）を 1200x630 にスケールして SVG で引き直したもの。
+// 会話ウィンドウのテクスチャ（流水紋）は埋め込めないので、
+// 特徴になっている上端の白線とその両端のフェードだけをグラデーションで再現している。
+
+const SHINOMAS_OG_W = 1200
+const SHINOMAS_OG_H = 630
+const SHINOMAS_REF_W = 1920
+
+type ShinomasTalkOgOptions = {
+  title: string
+  name: string
+  lines: string[]
+  footer: string
+}
+
+export function buildShinomasTalkOgSvg({
+  title,
+  name,
+  lines,
+  footer,
+}: ShinomasTalkOgOptions): string {
+  const u = SHINOMAS_OG_W / SHINOMAS_REF_W
+  const px = (v: number) => +(v * u).toFixed(2)
+  const fromBottom = (v: number) => +(SHINOMAS_OG_H - v * u).toFixed(2)
+
+  // --- 上部ボタン（120x120 の円。アイコンは縮小表示なので簡略化）---
+  const btnR = px(52)
+  const btnCy = px(70)
+  const logCx = px(110)
+  const skipCx = SHINOMAS_OG_W - px(110)
+  const ring = (cx: number) =>
+    `<circle cx="${cx}" cy="${btnCy}" r="${btnR}" fill="rgba(0,0,0,0.55)" stroke="#ffffff" stroke-width="${px(
+      7
+    )}" />`
+  const chevron = (cx: number, dx: number) =>
+    `<path d="M ${cx + dx - px(14)} ${btnCy - px(20)} L ${cx + dx + px(6)} ${btnCy} L ${
+      cx + dx - px(14)
+    } ${btnCy + px(20)}" fill="none" stroke="#ffffff" stroke-width="${px(
+      13
+    )}" stroke-linejoin="miter" stroke-linecap="butt" />`
+  const buttons =
+    ring(logCx) +
+    `<rect x="${logCx - px(30)}" y="${btnCy - px(24)}" width="${px(60)}" height="${px(
+      44
+    )}" rx="${px(10)}" fill="none" stroke="#ffffff" stroke-width="${px(8)}" />` +
+    `<path d="M ${logCx - px(14)} ${btnCy + px(18)} L ${logCx - px(4)} ${btnCy + px(
+      34
+    )} L ${logCx + px(4)} ${btnCy + px(18)} Z" fill="#ffffff" />` +
+    [-1, 0, 1]
+      .map(
+        (i) => `<circle cx="${logCx + px(15 * i)}" cy="${btnCy - px(2)}" r="${px(5)}" fill="#ffffff" />`
+      )
+      .join('') +
+    ring(skipCx) +
+    chevron(skipCx, -px(9)) +
+    chevron(skipCx, px(13))
+
+  // --- 会話ウィンドウ（上端の白線 + 下へ落ちる黒。左右端はフェード）---
+  const winY = fromBottom(216)
+  const winH = px(192)
+  const lineY = fromBottom(203) // 白線は素材の上から 10px
+  const winX = px(181)
+  const winW = SHINOMAS_OG_W - winX * 2
+  const win =
+    `<rect x="${winX}" y="${winY}" width="${winW}" height="${winH}" fill="url(#shinomasWin)" />` +
+    `<rect x="${winX}" y="${lineY}" width="${winW}" height="${px(
+      5
+    )}" fill="url(#shinomasLine)" />`
+
+  // --- セリフ（1 行目のベースラインは下端から 132、行送り 59）---
+  // 実機は x=480 から幅 960 のテキスト領域に左揃え。最長行がその幅を超えたときだけ
+  // 中央に寄る。ここでは全角 1em / 半角 0.5em で幅を概算する。
+  const emWidth = (s: string) =>
+    [...s].reduce((n, ch) => n + (/[\x20-\x7e｡-ﾟ]/.test(ch) ? 0.5 : 1), 0)
+  const fontSize = px(45.7)
+  const maxEm = Math.max(0, ...lines.slice(0, 3).map(emWidth))
+  const textX = +Math.min(px(480), (SHINOMAS_OG_W - maxEm * fontSize) / 2).toFixed(2)
+  const lineHeight = px(59)
+  const firstBaseline = fromBottom(132)
+  const dialogue = lines
+    .slice(0, 3)
+    .map(
+      (line, i) =>
+        `<text x="${textX}" y="${(firstBaseline + i * lineHeight).toFixed(
+          2
+        )}" font-size="${fontSize}" font-weight="600" fill="#ffffff" stroke="#000000" stroke-width="${px(
+          8
+        )}" stroke-linejoin="round" paint-order="stroke fill" font-family="sans-serif">${escapeXml(
+          line
+        )}</text>`
+    )
+    .join('')
+
+  const nameText = name
+    ? `<text x="${px(462)}" y="${fromBottom(
+        217
+      )}" font-size="${px(54)}" font-weight="600" fill="#000000" stroke="#ffffff" stroke-width="${px(
+        9
+      )}" stroke-linejoin="round" paint-order="stroke fill" font-family="sans-serif">${escapeXml(
+        name
+      )}</text>`
+    : ''
+
+  // --- 送りマーク（実機は 1668,975 に 56x64 の素材。その見えている部分の中心に置く）---
+  const nx = px(1696)
+  const ny = fromBottom(87)
+  const next = `<path d="M ${nx - px(24)} ${ny - px(14)} L ${nx + px(24)} ${ny - px(14)} L ${nx} ${
+    ny + px(18)
+  } Z" fill="#ffffff" stroke="#a97434" stroke-width="${px(
+    7
+  )}" stroke-linejoin="round" paint-order="stroke fill" />`
+
+  // --- タイトル（全角 1em / 半角 0.5em で概算して横幅に収める）---
+  const titleEm = [...title].reduce((n, ch) => n + (/[\x20-\x7e｡-ﾟ]/.test(ch) ? 0.5 : 1), 0)
+  const titleSize = Math.min(72, Math.floor(1020 / Math.max(titleEm, 1)))
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${SHINOMAS_OG_W}" height="${SHINOMAS_OG_H}" viewBox="0 0 ${SHINOMAS_OG_W} ${SHINOMAS_OG_H}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="shinomasBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a0508" />
+      <stop offset="50%" stop-color="#000000" />
+      <stop offset="100%" stop-color="#170a12" />
+    </linearGradient>
+    <linearGradient id="shinomasLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0" />
+      <stop offset="30%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="70%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="shinomasWin" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.85" />
+      <stop offset="80%" stop-color="#000000" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect width="${SHINOMAS_OG_W}" height="${SHINOMAS_OG_H}" fill="url(#shinomasBg)" />
+  ${buttons}
+  <text x="${SHINOMAS_OG_W / 2}" y="260" text-anchor="middle" font-size="${titleSize}" font-weight="bold" fill="#ffffff" stroke="#000000" stroke-width="${
+    titleSize / 6
+  }" stroke-linejoin="round" paint-order="stroke fill" font-family="sans-serif">${escapeXml(
+    title
+  )}</text>
+  ${win}
+  ${nameText}
+  ${dialogue}
+  ${next}
+  <text x="${px(110)}" y="${fromBottom(40)}" font-size="${px(
+    30
+  )}" fill="rgba(255,255,255,0.6)" font-family="sans-serif">${escapeXml(footer)}</text>
+</svg>
+`
+}
