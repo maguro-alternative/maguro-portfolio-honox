@@ -10,65 +10,23 @@ import {
 import { findShinomasEmblem, shinomasEmblems } from '../lib/talk/shinomasEmblems'
 import { useTalkEditor } from '../features/talk/useTalkEditor'
 import { useCanvasGesture } from '../features/talk/useCanvasGesture'
-
-const FONT_LINK_ID = 'shinomas-talk-font'
-const FONT_HREF =
-  'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap'
+import { ensureTalkFont, type TalkFontConfig } from '../features/talk/talkFont'
+import { getSprite } from '../features/talk/spriteCache'
+import { shinomasTheme } from '../features/talk/theme'
+import BadgePicker from '../features/talk/parts/BadgePicker'
+import LayerList from '../features/talk/parts/LayerList'
+import ScreenSettings from '../features/talk/parts/ScreenSettings'
 
 /** 写真で覆われない部分の色。参照スクショも黒背景。 */
 const BACKGROUND = '#000000'
 
-let talkFontPromise: Promise<void> | null = null
-
-/**
- * Canvas は Web フォントの読み込み完了を待たないと、素のフォールバック書体で焼き込まれる。
- * マウント時だけの useEffect は hono/jsx で走らないことがあるため、
- * 実際に描画する側（キャンバスの effect）から毎回呼べる形にしている。
- */
-function ensureTalkFont(): Promise<void> {
-  if (talkFontPromise) return talkFontPromise
-
-  if (!document.getElementById(FONT_LINK_ID)) {
-    const preconnect = document.createElement('link')
-    preconnect.rel = 'preconnect'
-    preconnect.href = 'https://fonts.gstatic.com'
-    preconnect.crossOrigin = ''
-    document.head.appendChild(preconnect)
-
-    const link = document.createElement('link')
-    link.id = FONT_LINK_ID
-    link.rel = 'stylesheet'
-    link.href = FONT_HREF
-    document.head.appendChild(link)
-  }
-
-  // 描画に使うのと同じウェイト指定で待たないと、可変フォントの別インスタンスを待ってしまう
-  const sample = 'あアｱ亜A1！'
-  talkFontPromise = Promise.all(
-    [46, 40, 20].map((size) =>
-      document.fonts.load(`${SHINOMAS_FONT_WEIGHT} ${size}px "Noto Sans JP"`, sample)
-    )
-  ).then(
-    () => undefined,
-    () => undefined
-  )
-  return talkFontPromise
-}
-
-// エンブレム画像はページをまたいで使い回す。読み込み完了で再描画させるため、
-// 呼び出し側から再描画用のコールバックを受け取る。
-// （ウィンドウ・ボタン・▽ は画像を使わず renderShinomasTalk 側で描いている）
-const spriteCache = new Map<string, HTMLImageElement>()
-
-function getSprite(src: string | null, onLoad: () => void): HTMLImageElement | null {
-  if (!src) return null
-  const cached = spriteCache.get(src)
-  if (cached) return cached.complete && cached.naturalWidth > 0 ? cached : null
-  const img = new Image()
-  img.onload = onLoad
-  img.src = src
-  spriteCache.set(src, img)
-  return null
+// ウィンドウ・ボタン・▽ は画像を使わず renderShinomasTalk 側で描いているので、
+// 素材画像として読み込むのはエンブレムだけ。
+const FONT: TalkFontConfig = {
+  linkId: 'shinomas-talk-font',
+  href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap',
+  family: '"Noto Sans JP"',
+  faces: [46, 40, 20].map((size) => ({ weight: SHINOMAS_FONT_WEIGHT, size })),
 }
 
 // 初期値はリセット処理と共有する
@@ -87,7 +45,7 @@ export default function ShinomasTalkClient() {
   const [fontReady, setFontReady] = useState(false)
 
   const editor = useTalkEditor({ downloadName: 'shinomas-talk.png' })
-  const { layers, selectedId, selected, canvasRef, updateLayer } = editor
+  const { layers, selected, canvasRef, updateLayer } = editor
   const [name, setName] = useState(INITIAL.name)
   const [emblemId, setEmblemId] = useState<string | null>(INITIAL.emblemId)
   const [text, setText] = useState(INITIAL.text)
@@ -123,7 +81,7 @@ export default function ShinomasTalkClient() {
     if (!ctx) return
 
     // Web フォントの読み込みもここから確実に走らせ、完了したら再描画させる
-    if (!fontReady) void ensureTalkFont().then(() => setFontReady(true))
+    if (!fontReady) void ensureTalkFont(FONT).then(() => setFontReady(true))
 
     const bump = () => setSpriteRev((v) => v + 1)
     const emblem = findShinomasEmblem(emblemId)
@@ -225,9 +183,9 @@ export default function ShinomasTalkClient() {
         </div>
 
         <div className="pt-4">
-          <section className="space-y-4 rounded-lg border border-slate-700 bg-slate-800 p-4 shadow-sm">
+          <section className={`space-y-4 ${shinomasTheme.panel}`}>
             <label className="block">
-              <span className="text-xs font-semibold text-slate-300">名前</span>
+              <span className={shinomasTheme.label}>名前</span>
               <input
                 type="text"
                 value={name}
@@ -238,44 +196,18 @@ export default function ShinomasTalkClient() {
               />
             </label>
 
-            <div>
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-xs font-semibold text-slate-300">所属（エンブレム）</span>
-                <span className="truncate text-xs text-slate-400">
-                  {findShinomasEmblem(emblemId)?.label ?? 'エンブレムなし'}
-                </span>
-              </div>
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
-                <button
-                  onClick={() => setEmblemId(null)}
-                  title="エンブレムなし"
-                  aria-label="エンブレムなし"
-                  aria-pressed={emblemId === null}
-                  className={`flex h-11 w-11 items-center justify-center rounded-md border bg-slate-900 text-[10px] font-semibold text-slate-400 ${
-                    emblemId === null ? 'border-red-500 ring-2 ring-red-500/40' : 'border-slate-600'
-                  }`}
-                >
-                  なし
-                </button>
-                {shinomasEmblems.map((e) => (
-                  <button
-                    key={e.id}
-                    onClick={() => setEmblemId(e.id)}
-                    title={e.label}
-                    aria-label={e.label}
-                    aria-pressed={emblemId === e.id}
-                    className={`flex h-11 w-11 items-center justify-center rounded-md border bg-slate-900 p-1 ${
-                      emblemId === e.id ? 'border-red-500 ring-2 ring-red-500/40' : 'border-slate-600'
-                    }`}
-                  >
-                    <img src={e.src} alt="" className="max-h-full min-w-0 max-w-full object-contain" />
-                  </button>
-                ))}
-              </div>
-            </div>
+            <BadgePicker
+              label="所属（エンブレム）"
+              noneLabel="エンブレムなし"
+              items={shinomasEmblems}
+              value={emblemId}
+              onChange={setEmblemId}
+              swatchSize="h-11 w-11"
+              theme={shinomasTheme}
+            />
 
             <label className="block">
-              <span className="text-xs font-semibold text-slate-300">
+              <span className={shinomasTheme.label}>
                 セリフ（改行で最大 {MAX_LINES} 行）
               </span>
               <textarea
@@ -292,132 +224,19 @@ export default function ShinomasTalkClient() {
             </label>
           </section>
 
-          <section className="mt-4 space-y-3 rounded-lg border border-slate-700 bg-slate-800 p-4 shadow-sm">
-            <h2 className="text-sm font-bold text-slate-200">
-              写真{' '}
-              {layers.length > 0 && <span className="text-slate-400">（{layers.length}枚）</span>}
-            </h2>
+          <LayerList editor={editor} theme={shinomasTheme} />
 
-            {layers.length === 0 ? (
-              <p className="py-4 text-center text-xs text-slate-500">
-                「写真を追加」から画像を読み込んでください
-              </p>
-            ) : (
-              <ul className="space-y-2">
-                {[...layers].reverse().map((layer) => {
-                  const isSelected = layer.id === selectedId
-                  return (
-                    <li
-                      key={layer.id}
-                      className={`rounded-md border p-2 ${
-                        isSelected ? 'border-red-500 bg-red-950/40' : 'border-slate-600'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => editor.selectLayer(layer.id)}
-                          className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                        >
-                          <img
-                            src={layer.url}
-                            alt=""
-                            className="h-10 w-10 shrink-0 rounded object-cover"
-                          />
-                          <span className="truncate text-xs text-slate-200">{layer.label}</span>
-                        </button>
-                        <button
-                          onClick={() => editor.moveLayer(layer.id, 1)}
-                          aria-label="前面へ"
-                          className="rounded border border-slate-600 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          onClick={() => editor.moveLayer(layer.id, -1)}
-                          aria-label="背面へ"
-                          className="rounded border border-slate-600 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700"
-                        >
-                          ↓
-                        </button>
-                        <button
-                          onClick={() => editor.removeLayer(layer.id)}
-                          aria-label="削除"
-                          className="rounded border border-red-800 px-2 py-1 text-xs text-red-400 hover:bg-red-950"
-                        >
-                          ✕
-                        </button>
-                      </div>
-
-                      {isSelected && (
-                        <div className="mt-2 flex items-center gap-3">
-                          <input
-                            type="range"
-                            min="0.15"
-                            max="5"
-                            step="0.01"
-                            value={String(layer.zoom)}
-                            onInput={(e) =>
-                              updateLayer(layer.id, {
-                                zoom: Number((e.currentTarget as HTMLInputElement).value),
-                              })
-                            }
-                            className="flex-1"
-                          />
-                          <button
-                            onClick={() => editor.centerLayer(layer.id)}
-                            className="shrink-0 rounded border border-slate-600 bg-slate-900 px-3 py-1 text-xs text-slate-300 hover:bg-slate-700"
-                          >
-                            中央に戻す
-                          </button>
-                        </div>
-                      )}
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
-          </section>
-
-          <section className="mt-4 space-y-3 rounded-lg border border-slate-700 bg-slate-800 p-4 shadow-sm">
-            <h2 className="text-sm font-bold text-slate-200">画面設定</h2>
-
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-slate-300">画面比率</span>
-              <div className="flex overflow-hidden rounded-md border border-slate-600">
-                {(['16:9', '4:3'] as TalkAspect[]).map((a) => (
-                  <button
-                    key={a}
-                    onClick={() => setAspect(a)}
-                    className={`px-4 py-1.5 text-xs font-semibold ${
-                      aspect === a ? 'bg-red-700 text-white' : 'bg-slate-900 text-slate-300'
-                    }`}
-                  >
-                    {a}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-4">
-              {(
-                [
-                  ['名前欄', showName, setShowName],
-                  ['ログボタン', showLog, setShowLog],
-                  ['早送りボタン', showSkip, setShowSkip],
-                  ['送りマーク ▽', showNext, setShowNext],
-                ] as [string, boolean, (v: boolean) => void][]
-              ).map(([label, value, setter]) => (
-                <label key={label} className="flex items-center gap-2 text-xs text-slate-300">
-                  <input
-                    type="checkbox"
-                    checked={value}
-                    onChange={(e) => setter((e.currentTarget as HTMLInputElement).checked)}
-                  />
-                  {label}
-                </label>
-              ))}
-            </div>
-          </section>
+          <ScreenSettings
+            aspect={aspect}
+            onAspectChange={setAspect}
+            toggles={[
+              { label: '名前欄', value: showName, onChange: setShowName },
+              { label: 'ログボタン', value: showLog, onChange: setShowLog },
+              { label: '早送りボタン', value: showSkip, onChange: setShowSkip },
+              { label: '送りマーク ▽', value: showNext, onChange: setShowNext },
+            ]}
+            theme={shinomasTheme}
+          />
 
           {/* 権利表記はフッターにあるので、ここはツール固有の注意書きだけにする */}
           <p className="mt-6 text-xs leading-relaxed text-slate-400">
