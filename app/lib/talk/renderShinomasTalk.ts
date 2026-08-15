@@ -26,8 +26,6 @@ export interface ShinomasScene {
   showNext: boolean
   /** 名前欄。地の文のように話者を出さない場面では外す */
   showName: boolean
-  /** 早送りボタンを一時停止（⏸）の見た目にする */
-  paused: boolean
 }
 
 const COLORS = {
@@ -106,34 +104,121 @@ let windowTextureCache: { key: string; canvas: HTMLCanvasElement } | null = null
 /**
  * 流水紋。左半分ぶんを 1558x192 の座標系で不透明な白で描く（右半分は呼び出し側で反転させる）。
  * 重なった部分が濃くならないよう、別レイヤーに描いてからまとめて薄くして合成する。
- * 実機の意匠に寄せた、ゆるやかな蛇行を平行に何本か重ねたもの。
+ *
+ * 実機は「左上でとがった穂先 → 左で折り返して右へ長く流れる → 右端でもう一度折り返して
+ * 左下へ抜ける」という S 字の太い帯が入れ子に重なった意匠。位置はスクショの右半分
+ * （文字が被らない側）から追跡した実測値で、帯の太さも実測どおり 5〜6 と太めにする。
+ */
+/** Catmull-Rom で通過点の間を補間する。 */
+function catmullRom(
+  pts: readonly (readonly [number, number])[],
+  i: number,
+  t: number
+): [number, number] {
+  const p0 = pts[i === 0 ? 0 : i - 1]
+  const p1 = pts[i]
+  const p2 = pts[i + 1]
+  const p3 = pts[i + 2 < pts.length ? i + 2 : pts.length - 1]
+  const t2 = t * t
+  const t3 = t2 * t
+  const at = (a: number, b: number, c: number, d: number) =>
+    0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3)
+  return [at(p0[0], p1[0], p2[0], p3[0]), at(p0[1], p1[1], p2[1], p3[1])]
+}
+
+/**
+ * 通過点の列を、点ごとに指定した太さで塗る。実機の流水紋は両端が尖っていて
+ * 折り返しでいちばん太くなるので、一定の線幅では形が合わない。
+ */
+function fillRibbon(
+  ctx: CanvasRenderingContext2D,
+  pts: readonly (readonly [number, number])[],
+  widths: readonly number[]
+) {
+  const STEPS = 10
+  const mid: [number, number, number][] = []
+  for (let i = 0; i < pts.length - 1; i++) {
+    for (let k = 0; k < STEPS; k++) {
+      const t = k / STEPS
+      const [x, y] = catmullRom(pts, i, t)
+      mid.push([x, y, widths[i] + (widths[i + 1] - widths[i]) * t])
+    }
+  }
+  mid.push([pts[pts.length - 1][0], pts[pts.length - 1][1], widths[widths.length - 1]])
+
+  const left: [number, number][] = []
+  const right: [number, number][] = []
+  for (let i = 0; i < mid.length; i++) {
+    const a = mid[Math.max(0, i - 1)]
+    const b = mid[Math.min(mid.length - 1, i + 1)]
+    const dx = b[0] - a[0]
+    const dy = b[1] - a[1]
+    const len = Math.hypot(dx, dy) || 1
+    const nx = (-dy / len) * (mid[i][2] / 2)
+    const ny = (dx / len) * (mid[i][2] / 2)
+    left.push([mid[i][0] + nx, mid[i][1] + ny])
+    right.push([mid[i][0] - nx, mid[i][1] - ny])
+  }
+
+  ctx.beginPath()
+  ctx.moveTo(left[0][0], left[0][1])
+  for (const [x, y] of left.slice(1)) ctx.lineTo(x, y)
+  for (let i = right.length - 1; i >= 0; i--) ctx.lineTo(right[i][0], right[i][1])
+  ctx.closePath()
+  ctx.fill()
+}
+
+// 帯ごとの通過点と、その点での太さ。左上の穂先から始まり、左で折り返して右へ長く流れ、
+// 右端でもう一度折り返して左下へ抜ける。座標はスクショから追跡した実測値で、
+// 太さは折り返しでいちばん太く、両端へ向かって尖らせている。
+const FLOW_STROKES: {
+  pts: readonly (readonly [number, number])[]
+  widths: readonly number[]
+}[] = [
+  // 左の折り返しがいちばん外（穂先が低く左寄り）。右の折り返しは内側を回り、
+  // 戻りの腕は内側の高さになる。実機もこの入れ子で、帯どうしは交差しない。
+  {
+    pts: [
+      [143, 31.5], [128, 39], [113, 44.5], [103, 52], [96, 62], [103, 73],
+      [130, 83], [157, 86.5], [211, 89], [265, 92.5], [319, 101],
+      [352, 109], [372, 122], [352, 131], [310, 133],
+      [275, 138.5], [213, 143], [151, 145.5], [89, 149.5], [57, 151], [42, 156],
+    ],
+    widths: [0.5, 3, 4.5, 5.5, 6, 6, 6, 6, 5.5, 6, 8.5, 11, 12.5, 12, 10.5, 8, 7, 6.5, 5, 3, 0.5],
+  },
+  // こちらは左の折り返しが内側で、右の折り返しがいちばん外を回る。
+  {
+    pts: [
+      [184, 17.5], [169, 24.5], [157, 34], [145, 39], [133, 46.5], [126, 57], [133, 68.5],
+      [158, 78.5], [208, 81.5], [258, 84.5], [308, 88],
+      [348, 94], [384, 108], [396, 128], [370, 147], [320, 148],
+      [277, 148.5], [203, 151], [129, 154.5], [92, 158.5], [53, 169], [36, 176],
+    ],
+    widths: [0.5, 2.5, 4, 5, 5.5, 6, 6, 6, 5.5, 6, 8.5, 11.5, 13, 13, 11.5, 9.5, 8, 7, 6, 5, 3, 0.5],
+  },
+  // いちばん内側は右へ流れきらずに帯へ寄り添って消える
+  {
+    pts: [[212, 21], [195, 31.5], [177, 39], [165, 47], [158, 56], [163, 65], [174, 70], [186, 72]],
+    widths: [0.5, 3.5, 5, 5.5, 5.5, 5, 4, 0.5],
+  },
+  // 左下でほどける細い筋。実機でも左端の狭い範囲にしか出ない。
+  {
+    pts: [[122, 155], [96, 157], [66, 162], [40, 172]],
+    widths: [0.5, 3.4, 3, 0.5],
+  },
+  {
+    pts: [[104, 161], [80, 164], [56, 170], [36, 180]],
+    widths: [0.5, 2.8, 2.4, 0.5],
+  },
+]
+
+/**
+ * 流水紋。左半分ぶんを 1558x192 の座標系で不透明な白で描く（右半分は呼び出し側で反転させる）。
+ * 重なった部分が濃くならないよう、別レイヤーに描いてからまとめて薄くして合成する。
  */
 function strokeFlowPattern(ctx: CanvasRenderingContext2D) {
-  ctx.strokeStyle = '#ffffff'
-  ctx.lineCap = 'round'
-
-  // 右端で折り返す大きなヘアピン。少しずつずらして平行に重ねる。
-  for (let i = 0; i < 5; i++) {
-    const d = i * 8
-    ctx.lineWidth = 3.2 - i * 0.35
-    ctx.beginPath()
-    ctx.moveTo(96 + d * 0.5, 66 + d)
-    ctx.bezierCurveTo(210, 54 + d, 320, 66 + d, 388 - d * 0.6, 100 + d * 0.7)
-    ctx.bezierCurveTo(432 - d * 0.8, 122 + d * 0.6, 404 - d * 0.7, 148 - d * 0.1, 320 - d * 0.9, 150 - d * 0.3)
-    ctx.bezierCurveTo(226 - d * 0.9, 152 - d * 0.4, 132 - d * 0.7, 160 - d * 0.5, 58, 174 - d * 0.7)
-    ctx.stroke()
-  }
-
-  // 左上に伸びる小さめの渦。流水紋の穂先にあたる部分。
-  for (let i = 0; i < 3; i++) {
-    const d = i * 8
-    ctx.lineWidth = 2.8 - i * 0.35
-    ctx.beginPath()
-    ctx.moveTo(214 + d * 1.2, 16 + d * 0.6)
-    ctx.bezierCurveTo(156 + d, 20 + d * 0.7, 108 + d * 0.7, 36 + d * 0.6, 112 + d * 0.6, 56 + d * 0.4)
-    ctx.bezierCurveTo(116 + d * 0.5, 76 + d * 0.3, 162 + d * 0.4, 86 + d * 0.2, 206 + d * 0.3, 88 + d * 0.2)
-    ctx.stroke()
-  }
+  ctx.fillStyle = '#ffffff'
+  for (const { pts, widths } of FLOW_STROKES) fillRibbon(ctx, pts, widths)
 }
 
 /** ウィンドウ 1 枚ぶんのテクスチャを組み立てる。サイズが同じなら使い回す。 */
@@ -253,7 +338,7 @@ const BTN_R = 48.5
 const BTN_RING_W = 3
 const BTN_FILL = 'rgba(161,161,161,0.25)'
 
-type ButtonIcon = 'log' | 'skip' | 'pause'
+type ButtonIcon = 'log' | 'skip'
 
 function drawCircleButton(
   ctx: CanvasRenderingContext2D,
@@ -296,7 +381,6 @@ function drawCircleButton(
   ctx.fillStyle = '#ffffff'
   ctx.strokeStyle = '#ffffff'
   if (icon === 'skip') drawSkipIcon(ctx)
-  else if (icon === 'pause') drawPauseIcon(ctx)
   else drawLogIcon(ctx)
 
   ctx.restore()
@@ -317,12 +401,6 @@ function drawSkipIcon(ctx: CanvasRenderingContext2D) {
   }
   chevron(0)
   chevron(23)
-}
-
-/** ⏸ */
-function drawPauseIcon(ctx: CanvasRenderingContext2D) {
-  ctx.fillRect(39, 37, 15, 46)
-  ctx.fillRect(66, 37, 15, 46)
 }
 
 /** セリフログの吹き出し。角丸の枠と、左下に伸びる尻尾、中に 3 つの点 */
@@ -365,7 +443,7 @@ function drawButtons(ctx: CanvasRenderingContext2D, scene: ShinomasScene) {
   if (scene.showLog) drawCircleButton(ctx, BTN_LOG_X * u, BTN_Y * u, size, 'log')
   if (scene.showSkip) {
     const x = scene.width - (BTN_SKIP_FROM_RIGHT + BTN_SIZE) * u
-    drawCircleButton(ctx, x, BTN_Y * u, size, scene.paused ? 'pause' : 'skip')
+    drawCircleButton(ctx, x, BTN_Y * u, size, 'skip')
   }
 }
 

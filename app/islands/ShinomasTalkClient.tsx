@@ -85,7 +85,6 @@ const INITIAL = {
   showLog: true,
   showSkip: true,
   showNext: true,
-  paused: false,
 }
 
 let layerSeq = 0
@@ -125,7 +124,6 @@ export default function ShinomasTalkClient() {
   const [showLog, setShowLog] = useState(INITIAL.showLog)
   const [showSkip, setShowSkip] = useState(INITIAL.showSkip)
   const [showNext, setShowNext] = useState(INITIAL.showNext)
-  const [paused, setPaused] = useState(INITIAL.paused)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   // UI 素材は読み込み後に再描画が要るので、再描画トリガーを持つ
@@ -154,8 +152,7 @@ export default function ShinomasTalkClient() {
     showName === INITIAL.showName &&
     showLog === INITIAL.showLog &&
     showSkip === INITIAL.showSkip &&
-    showNext === INITIAL.showNext &&
-    paused === INITIAL.paused
+    showNext === INITIAL.showNext
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -183,7 +180,6 @@ export default function ShinomasTalkClient() {
       showLog,
       showSkip,
       showNext,
-      paused,
     })
   }, [
     layers,
@@ -195,7 +191,6 @@ export default function ShinomasTalkClient() {
     showLog,
     showSkip,
     showNext,
-    paused,
     fontReady,
     spriteRev,
     size.width,
@@ -271,7 +266,6 @@ export default function ShinomasTalkClient() {
     setShowLog(INITIAL.showLog)
     setShowSkip(INITIAL.showSkip)
     setShowNext(INITIAL.showNext)
-    setPaused(INITIAL.paused)
   }
 
   // ---------------------------------------------------------- キャンバス操作
@@ -485,10 +479,6 @@ export default function ShinomasTalkClient() {
                 className="mt-1 w-full resize-y rounded-md border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-red-500 focus:outline-none"
                 style={{ fontFamily: SHINOMAS_FONT_FAMILY }}
               />
-              <span className="mt-1 block text-xs text-slate-500">
-                実機と同じく、全角 21 文字までは左端が揃い、それより長い行があると
-                その行がはみ出すぶんだけ全体が左へ寄ります。
-              </span>
             </label>
           </section>
 
@@ -593,28 +583,6 @@ export default function ShinomasTalkClient() {
                     }`}
                   >
                     {a}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-slate-300">早送りボタン</span>
-              <div className="flex overflow-hidden rounded-md border border-slate-600">
-                {(
-                  [
-                    ['≫', false],
-                    ['⏸', true],
-                  ] as [string, boolean][]
-                ).map(([label, value]) => (
-                  <button
-                    key={label}
-                    onClick={() => setPaused(value)}
-                    className={`px-4 py-1.5 text-xs font-semibold ${
-                      paused === value ? 'bg-red-700 text-white' : 'bg-slate-900 text-slate-300'
-                    }`}
-                  >
-                    {label}
                   </button>
                 ))}
               </div>
