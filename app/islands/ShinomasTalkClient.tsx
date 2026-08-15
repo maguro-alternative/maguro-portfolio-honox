@@ -613,7 +613,6 @@ export default function ShinomasTalkClient() {
           <p className="mt-6 text-xs leading-relaxed text-slate-400">
             本ツールは個人が作成した非公式のファンメイドです。
             読み込んだ画像はブラウザ内だけで処理され、サーバーには送信されません。
-            文字はゲームと同じ書体ではなく Noto Sans JP で描画しています。
             生成した画像の取り扱いは、各権利者のガイドラインに従ってください。
           </p>
         </div>
