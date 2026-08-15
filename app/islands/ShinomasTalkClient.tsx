@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'hono/jsx'
+import { useState, useEffect, useMemo } from 'hono/jsx'
 import {
   MAX_LINES,
   SHINOMAS_FONT_FAMILY,
@@ -6,14 +6,10 @@ import {
   renderShinomasScene,
   talkCanvasSize,
   type TalkAspect,
-  type TalkLayer,
 } from '../lib/talk/renderShinomasTalk'
 import { findShinomasEmblem, shinomasEmblems } from '../lib/talk/shinomasEmblems'
-
-interface PhotoLayer extends TalkLayer {
-  url: string
-  label: string
-}
+import { useTalkEditor } from '../features/talk/useTalkEditor'
+import { useCanvasGesture } from '../features/talk/useCanvasGesture'
 
 const FONT_LINK_ID = 'shinomas-talk-font'
 const FONT_HREF =
@@ -87,35 +83,11 @@ const INITIAL = {
   showNext: true,
 }
 
-let layerSeq = 0
-
-function loadFile(file: File): Promise<PhotoLayer> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file)
-    const image = new Image()
-    image.onload = () =>
-      resolve({
-        id: `layer-${++layerSeq}`,
-        label: file.name.replace(/\.[^.]+$/, ''),
-        url,
-        image,
-        offX: 0,
-        offY: 0,
-        zoom: 1,
-      })
-    image.onerror = () => {
-      URL.revokeObjectURL(url)
-      reject(new Error('画像を読み込めませんでした'))
-    }
-    image.src = url
-  })
-}
-
 export default function ShinomasTalkClient() {
   const [fontReady, setFontReady] = useState(false)
 
-  const [layers, setLayers] = useState<PhotoLayer[]>([])
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const editor = useTalkEditor({ downloadName: 'shinomas-talk.png' })
+  const { layers, selectedId, selected, canvasRef, updateLayer } = editor
   const [name, setName] = useState(INITIAL.name)
   const [emblemId, setEmblemId] = useState<string | null>(INITIAL.emblemId)
   const [text, setText] = useState(INITIAL.text)
@@ -125,24 +97,12 @@ export default function ShinomasTalkClient() {
   const [showSkip, setShowSkip] = useState(INITIAL.showSkip)
   const [showNext, setShowNext] = useState(INITIAL.showNext)
 
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   // UI 素材は読み込み後に再描画が要るので、再描画トリガーを持つ
   const [spriteRev, setSpriteRev] = useState(0)
-  const pointers = useRef<Map<number, { x: number; y: number }>>(new Map())
-  const gesture = useRef<{
-    mode: 'drag' | 'pinch'
-    layerId: string
-    startOffX: number
-    startOffY: number
-    startZoom: number
-    startX: number
-    startY: number
-    startDist: number
-  } | null>(null)
+  const canvasHandlers = useCanvasGesture({ canvasRef, selected, updateLayer })
 
   const size = talkCanvasSize(aspect)
   const lines = useMemo(() => text.split('\n').slice(0, MAX_LINES), [text])
-  const selected = layers.find((l) => l.id === selectedId) ?? null
   const isPristine =
     layers.length === 0 &&
     name === INITIAL.name &&
@@ -197,67 +157,8 @@ export default function ShinomasTalkClient() {
     size.height,
   ])
 
-  const updateLayer = (id: string, patch: Partial<PhotoLayer>) => {
-    setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)))
-  }
-
-  // hono/jsx の onChange は input イベントに割り当てられ file input と相性が悪いので、
-  // 隠し input を JSX に置かず、クリックのたびに使い捨ての input を作って change を拾う。
-  const openPicker = () => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = 'image/*'
-    input.multiple = true
-    input.onchange = () => void handleFiles(input.files)
-    input.click()
-  }
-
-  const handleFiles = async (files: FileList | null) => {
-    if (!files || files.length === 0) return
-    const loaded: PhotoLayer[] = []
-    for (const file of Array.from(files)) {
-      if (!file.type.startsWith('image/')) continue
-      try {
-        loaded.push(await loadFile(file))
-      } catch {
-        // 読めない画像は黙って飛ばす
-      }
-    }
-    if (loaded.length === 0) return
-    setLayers((prev) => [...prev, ...loaded])
-    setSelectedId(loaded[loaded.length - 1].id)
-  }
-
-  const handleRemove = (id: string) => {
-    setLayers((prev) => {
-      const target = prev.find((l) => l.id === id)
-      if (target) URL.revokeObjectURL(target.url)
-      return prev.filter((l) => l.id !== id)
-    })
-    setSelectedId((prev) => (prev === id ? null : prev))
-  }
-
-  const handleMove = (id: string, dir: -1 | 1) => {
-    setLayers((prev) => {
-      const i = prev.findIndex((l) => l.id === id)
-      const j = i + dir
-      if (i < 0 || j < 0 || j >= prev.length) return prev
-      const next = [...prev]
-      ;[next[i], next[j]] = [next[j], next[i]]
-      return next
-    })
-  }
-
-  const handleCenter = (id: string) => {
-    updateLayer(id, { offX: 0, offY: 0, zoom: 1 })
-  }
-
   const handleReset = () => {
-    setLayers((prev) => {
-      for (const layer of prev) URL.revokeObjectURL(layer.url)
-      return []
-    })
-    setSelectedId(null)
+    editor.clearLayers()
     setName(INITIAL.name)
     setEmblemId(INITIAL.emblemId)
     setText(INITIAL.text)
@@ -266,93 +167,6 @@ export default function ShinomasTalkClient() {
     setShowLog(INITIAL.showLog)
     setShowSkip(INITIAL.showSkip)
     setShowNext(INITIAL.showNext)
-  }
-
-  // ---------------------------------------------------------- キャンバス操作
-
-  const canvasPointFromEvent = (e: PointerEvent) => ({ x: e.clientX, y: e.clientY })
-
-  const onPointerDown = (e: PointerEvent) => {
-    const canvas = canvasRef.current
-    const active = pointers.current
-    if (!canvas || !active || !selected) return
-    canvas.setPointerCapture(e.pointerId)
-    active.set(e.pointerId, canvasPointFromEvent(e))
-
-    const pts = Array.from(active.values())
-    if (pts.length === 1) {
-      gesture.current = {
-        mode: 'drag',
-        layerId: selected.id,
-        startOffX: selected.offX,
-        startOffY: selected.offY,
-        startZoom: selected.zoom,
-        startX: pts[0].x,
-        startY: pts[0].y,
-        startDist: 0,
-      }
-    } else if (pts.length === 2) {
-      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y)
-      gesture.current = {
-        mode: 'pinch',
-        layerId: selected.id,
-        startOffX: selected.offX,
-        startOffY: selected.offY,
-        startZoom: selected.zoom,
-        startX: (pts[0].x + pts[1].x) / 2,
-        startY: (pts[0].y + pts[1].y) / 2,
-        startDist: dist,
-      }
-    }
-  }
-
-  const onPointerMove = (e: PointerEvent) => {
-    const canvas = canvasRef.current
-    const g = gesture.current
-    const active = pointers.current
-    if (!canvas || !g || !active || !active.has(e.pointerId)) return
-    active.set(e.pointerId, canvasPointFromEvent(e))
-    const rect = canvas.getBoundingClientRect()
-    const pts = Array.from(active.values())
-
-    if (g.mode === 'pinch' && pts.length >= 2) {
-      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y)
-      const zoom = clamp(g.startZoom * (dist / (g.startDist || dist)), 0.15, 5)
-      updateLayer(g.layerId, { zoom })
-      return
-    }
-
-    const dx = (pts[0].x - g.startX) / rect.width
-    const dy = (pts[0].y - g.startY) / rect.height
-    updateLayer(g.layerId, { offX: g.startOffX + dx, offY: g.startOffY + dy })
-  }
-
-  const onPointerUp = (e: PointerEvent) => {
-    const active = pointers.current
-    if (!active) return
-    active.delete(e.pointerId)
-    if (active.size === 0) gesture.current = null
-  }
-
-  const onWheel = (e: WheelEvent) => {
-    if (!selected) return
-    e.preventDefault()
-    const factor = e.deltaY < 0 ? 1.06 : 1 / 1.06
-    updateLayer(selected.id, { zoom: clamp(selected.zoom * factor, 0.15, 5) })
-  }
-
-  const handleDownload = () => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    canvas.toBlob((blob) => {
-      if (!blob) return
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'shinomas-talk.png'
-      a.click()
-      URL.revokeObjectURL(url)
-    }, 'image/png')
   }
 
   return (
@@ -378,23 +192,19 @@ export default function ShinomasTalkClient() {
               aria-label="会話画面のプレビュー"
               className="mx-auto block max-h-[38vh] w-auto max-w-full lg:max-h-[calc(100vh-13rem)]"
               style={{ touchAction: 'none', cursor: selected ? 'move' : 'default' }}
-              onPointerDown={onPointerDown}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              onPointerCancel={onPointerUp}
-              onWheel={onWheel}
+              {...canvasHandlers}
             />
           </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <button
-              onClick={handleDownload}
+              onClick={editor.download}
               className="rounded-lg bg-red-700 px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-red-600"
             >
               画像を保存
             </button>
             <button
-              onClick={openPicker}
+              onClick={editor.openPicker}
               className="rounded-lg border border-slate-600 bg-slate-800 px-5 py-2 text-sm font-bold text-slate-100 shadow-sm transition-colors hover:bg-slate-700"
             >
               写真を追加
@@ -505,7 +315,7 @@ export default function ShinomasTalkClient() {
                     >
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setSelectedId(layer.id)}
+                          onClick={() => editor.selectLayer(layer.id)}
                           className="flex min-w-0 flex-1 items-center gap-2 text-left"
                         >
                           <img
@@ -516,21 +326,21 @@ export default function ShinomasTalkClient() {
                           <span className="truncate text-xs text-slate-200">{layer.label}</span>
                         </button>
                         <button
-                          onClick={() => handleMove(layer.id, 1)}
+                          onClick={() => editor.moveLayer(layer.id, 1)}
                           aria-label="前面へ"
                           className="rounded border border-slate-600 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700"
                         >
                           ↑
                         </button>
                         <button
-                          onClick={() => handleMove(layer.id, -1)}
+                          onClick={() => editor.moveLayer(layer.id, -1)}
                           aria-label="背面へ"
                           className="rounded border border-slate-600 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700"
                         >
                           ↓
                         </button>
                         <button
-                          onClick={() => handleRemove(layer.id)}
+                          onClick={() => editor.removeLayer(layer.id)}
                           aria-label="削除"
                           className="rounded border border-red-800 px-2 py-1 text-xs text-red-400 hover:bg-red-950"
                         >
@@ -554,7 +364,7 @@ export default function ShinomasTalkClient() {
                             className="flex-1"
                           />
                           <button
-                            onClick={() => handleCenter(layer.id)}
+                            onClick={() => editor.centerLayer(layer.id)}
                             className="shrink-0 rounded border border-slate-600 bg-slate-900 px-3 py-1 text-xs text-slate-300 hover:bg-slate-700"
                           >
                             中央に戻す
@@ -655,8 +465,4 @@ function SiteFooter() {
       </div>
     </div>
   )
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value))
 }

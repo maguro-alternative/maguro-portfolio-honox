@@ -1,0 +1,161 @@
+// セリフメーカーの写真レイヤー管理。ゲーム固有の描画・UI には依存しない。
+import { useRef, useState, type RefObject } from 'hono/jsx'
+import type { TalkLayer } from '../../lib/talk/renderTalk'
+
+/** ファイルから読み込んだ写真レイヤー。一覧表示用に object URL と表示名を持つ。 */
+export interface PhotoLayer extends TalkLayer {
+  url: string
+  label: string
+}
+
+export const ZOOM_MIN = 0.15
+export const ZOOM_MAX = 5
+
+let layerSeq = 0
+
+function loadFile(file: File): Promise<PhotoLayer> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const image = new Image()
+    image.onload = () =>
+      resolve({
+        id: `layer-${++layerSeq}`,
+        label: file.name.replace(/\.[^.]+$/, ''),
+        url,
+        image,
+        offX: 0,
+        offY: 0,
+        zoom: 1,
+      })
+    image.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('画像を読み込めませんでした'))
+    }
+    image.src = url
+  })
+}
+
+export interface TalkEditorOptions {
+  /** 「画像を保存」で使うファイル名 */
+  downloadName: string
+}
+
+export interface TalkEditor {
+  /** 背面から前面の順。描画順とそのまま対応する */
+  layers: PhotoLayer[]
+  selectedId: string | null
+  selected: PhotoLayer | null
+  canvasRef: RefObject<HTMLCanvasElement>
+  selectLayer(id: string | null): void
+  updateLayer(id: string, patch: Partial<PhotoLayer>): void
+  /** ファイル選択ダイアログを開いて、選ばれた画像をレイヤーとして追加する */
+  openPicker(): void
+  removeLayer(id: string): void
+  /** dir: 1 で前面、-1 で背面へ 1 つ動かす */
+  moveLayer(id: string, dir: -1 | 1): void
+  /** 位置・倍率を初期状態に戻す */
+  centerLayer(id: string): void
+  /** 全レイヤーを破棄する。object URL も解放する */
+  clearLayers(): void
+  download(): void
+}
+
+export function useTalkEditor({ downloadName }: TalkEditorOptions): TalkEditor {
+  const [layers, setLayers] = useState<PhotoLayer[]>([])
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  const selected = layers.find((l) => l.id === selectedId) ?? null
+
+  const updateLayer = (id: string, patch: Partial<PhotoLayer>) => {
+    setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)))
+  }
+
+  const addFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    const loaded: PhotoLayer[] = []
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith('image/')) continue
+      try {
+        loaded.push(await loadFile(file))
+      } catch {
+        // 読めない画像は黙って飛ばす
+      }
+    }
+    if (loaded.length === 0) return
+    setLayers((prev) => [...prev, ...loaded])
+    setSelectedId(loaded[loaded.length - 1].id)
+  }
+
+  // hono/jsx の onChange は input イベントに割り当てられ file input と相性が悪いので、
+  // 隠し input を JSX に置かず、クリックのたびに使い捨ての input を作って change を拾う。
+  const openPicker = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.multiple = true
+    input.onchange = () => void addFiles(input.files)
+    input.click()
+  }
+
+  const removeLayer = (id: string) => {
+    setLayers((prev) => {
+      const target = prev.find((l) => l.id === id)
+      if (target) URL.revokeObjectURL(target.url)
+      return prev.filter((l) => l.id !== id)
+    })
+    setSelectedId((prev) => (prev === id ? null : prev))
+  }
+
+  const moveLayer = (id: string, dir: -1 | 1) => {
+    setLayers((prev) => {
+      const i = prev.findIndex((l) => l.id === id)
+      const j = i + dir
+      if (i < 0 || j < 0 || j >= prev.length) return prev
+      const next = [...prev]
+      ;[next[i], next[j]] = [next[j], next[i]]
+      return next
+    })
+  }
+
+  const centerLayer = (id: string) => {
+    updateLayer(id, { offX: 0, offY: 0, zoom: 1 })
+  }
+
+  const clearLayers = () => {
+    setLayers((prev) => {
+      for (const layer of prev) URL.revokeObjectURL(layer.url)
+      return []
+    })
+    setSelectedId(null)
+  }
+
+  const download = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    canvas.toBlob((blob) => {
+      if (!blob) return
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = downloadName
+      a.click()
+      URL.revokeObjectURL(url)
+    }, 'image/png')
+  }
+
+  return {
+    layers,
+    selectedId,
+    selected,
+    canvasRef,
+    selectLayer: setSelectedId,
+    updateLayer,
+    openPicker,
+    removeLayer,
+    moveLayer,
+    centerLayer,
+    clearLayers,
+    download,
+  }
+}
