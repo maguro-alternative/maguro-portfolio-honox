@@ -16,6 +16,9 @@ maguro-alternative のポートフォリオサイト。HonoX (Hono ベースの 
 
 ```sh
 npm run dev        # 開発サーバー（Vite）
+npm run check      # typecheck + lint（push 前にこれ）
+npm run typecheck  # tsc --noEmit
+npm run lint       # ESLint（--fix は npm run lint:fix）
 npm run build      # Vercel 向け 2段ビルド
 npm run deploy     # ビルド後 vercel deploy --prod
 npm run build:cf   # Cloudflare 向け 2段ビルド
@@ -29,7 +32,9 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev
 - サーバービルドのターゲットは `DEPLOY_TARGET` 環境変数で決まる（未指定 = `@hono/vite-build/vercel`、`cloudflare` = `@hono/vite-build/cloudflare-workers`）。クライアント成果物は共通で `dist/` に出す（honox が `/dist/.vite/manifest.json` を決め打ちで読むため、この出力先は変更しない）
 - Cloudflare 版では `dist/` をそのまま静的アセットとして配信するので、Worker 本体（`dist/index.js`）と manifest は `build:cf` が生成する `dist/.assetsignore` で除外する
 - ランタイム非依存を保つこと（`node:*` や `fs` を使わない。記事読み込みは `import.meta.glob`、外部取得は `fetch`）
-- Islands（`app/islands/`）はクライアントサイドで動くコンポーネント。通常のコンポーネントと混在させない
+- クライアントサイドのコードは2層に分ける。`app/islands/` はハイドレーション境界（= ルートから読む入口）で、島どうしで共有するフック・UI 部品は `app/features/<機能>/` に置く。共有部品を `app/islands/` に置くと、それ自体が別のハイドレーション境界になってしまう
+- 依存の向きは `app/lib/` → `app/features/` → `app/islands/` の一方通行。逆流は ESLint が弾く
+- 上記のルール（ランタイム非依存・フックの置き場所・依存の向き）は `eslint.config.js` で機械的に検査している。ルールを変えるときは設定も直す
 - Cloudflare Bindings（R2 等）は `c.env` 経由でアクセスする。型は `wrangler types` で生成した `worker-configuration.d.ts` を使う
 
 ## ブログシステム
@@ -46,6 +51,7 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev
 
 ## やってはいけないこと
 
-- `app/islands/` 以外でクライアントサイドの状態管理をしない
+- `app/islands/` と `app/features/` 以外でクライアントサイドの状態管理をしない
 - `wrangler.jsonc` に秘密情報を直接書かない（Secrets を使う）
 - コードのコメントにはwhy notのみを書く。
+- Tailwind のクラス名を文字列結合で組み立てない（`bg-${color}-700` は v4 の JIT が拾えない）。可変にしたい場合は完全なクラス名を持つトークンを用意する（例: `app/features/talk/theme.ts`）
