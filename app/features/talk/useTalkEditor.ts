@@ -1,7 +1,7 @@
 import { useRef, useState, type RefObject } from 'hono/jsx'
 import type { TalkLayer } from '../../lib/talk/renderTalk'
 import { logFailure } from '../../lib/logFailure'
-import { ZOOM_MAX, ZOOM_MIN } from './layerOps'
+import { ZOOM_MAX, ZOOM_MIN, moveLayer as moveLayerIn } from './layerOps'
 
 export { ZOOM_MAX, ZOOM_MIN }
 
@@ -104,14 +104,7 @@ export function useTalkEditor({ downloadName }: TalkEditorOptions): TalkEditor {
   }
 
   const moveLayer = (id: string, dir: -1 | 1) => {
-    setLayers((prev) => {
-      const i = prev.findIndex((l) => l.id === id)
-      const j = i + dir
-      if (i < 0 || j < 0 || j >= prev.length) return prev
-      const next = [...prev]
-      ;[next[i], next[j]] = [next[j], next[i]]
-      return next
-    })
+    setLayers((prev) => moveLayerIn(prev, id, dir) as PhotoLayer[])
   }
 
   const centerLayer = (id: string) => {
