@@ -1,6 +1,13 @@
 import { useState, useMemo, useEffect } from 'hono/jsx'
+import { pickRandom } from '../../lib/pickRandom'
 import type { ShareCodec } from './shareCodec'
-import { createEmptyItems, toSelectedItem, type NineCharacter, type SelectedItem } from './types'
+import {
+  SLOT_COUNT,
+  createEmptyItems,
+  toSelectedItem,
+  type NineCharacter,
+  type SelectedItem,
+} from './types'
 
 export interface NineConfig {
   characters: readonly NineCharacter[]
@@ -73,23 +80,22 @@ export function useNineSelection(config: NineConfig): NineSelection {
     },
 
     randomize() {
-      const shuffled = [...characters].sort(() => Math.random() - 0.5)
-      applyItems(shuffled.slice(0, 9).map(toSelectedItem))
+      applyItems(pickRandom(characters, SLOT_COUNT).map(toSelectedItem))
     },
 
     reset() {
       applyItems(createEmptyItems())
     },
 
+    copyShareText() {
+      navigator.clipboard.writeText(shareText)
+      alert('コピーしました！')
+    },
+
     clearPanel(index) {
       const next = [...selectedItems]
       next[index] = { name: '' }
       applyItems(next)
-    },
-
-    copyShareText() {
-      navigator.clipboard.writeText(shareText)
-      alert('コピーしました！')
     },
   }
 }
