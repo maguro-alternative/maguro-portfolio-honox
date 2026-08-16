@@ -6,7 +6,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "check": "npm run typecheck && npm run lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm run lint && npm run test",
     "build": "rm -rf dist .vercel/output && vite build --mode client && vite build && cp -r dist/assets .vercel/output/static/ && node scripts/fix-vercel-runtime.mjs",
     "build:cf": "rm -rf dist && vite build --mode client && DEPLOY_TARGET=cloudflare vite build && printf 'index.js\\n.vite/\\n' > dist/.assetsignore",
     "preview": "npm run build:cf && wrangler dev",
@@ -38,6 +40,7 @@
     "globals": "^17.11.0",
     "typescript-eslint": "^8.67.0",
     "vite": "^6.1.1",
+    "vitest": "^4.1.10",
     "wrangler": "^4.4.0"
   },
   "engines": {
