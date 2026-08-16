@@ -1,14 +1,14 @@
 import { useRef, useState, type RefObject } from 'hono/jsx'
 import type { TalkLayer } from '../../lib/talk/renderTalk'
 import { logFailure } from '../../lib/logFailure'
+import { ZOOM_MAX, ZOOM_MIN } from './layerOps'
+
+export { ZOOM_MAX, ZOOM_MIN }
 
 export interface PhotoLayer extends TalkLayer {
   url: string
   label: string
 }
-
-export const ZOOM_MIN = 0.15
-export const ZOOM_MAX = 5
 
 let layerSeq = 0
 
