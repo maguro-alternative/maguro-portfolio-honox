@@ -117,8 +117,8 @@ export const noise = {
         const x2 = x0 - 1 + 2 * G2;
         const y2 = y0 - 1 + 2 * G2;
 
-        let ii = i & 255;
-        let jj = j & 255;
+        const ii = i & 255;
+        const jj = j & 255;
         const gi0 = gradP[ii + perm[jj]];
         const gi1 = gradP[ii + i1 + perm[jj + j1]];
         const gi2 = gradP[ii + 1 + perm[jj + 1]];

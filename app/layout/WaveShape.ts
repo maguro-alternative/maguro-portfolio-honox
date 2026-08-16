@@ -7,7 +7,7 @@ export function drawWave(
   w: number,
   h: number,
   vertexNum: number = 10,
-  maxVertex: number = 5,
+  _maxVertex: number = 5,
   debugMode: boolean = false
 ): void {
   // 曲線を描き直す

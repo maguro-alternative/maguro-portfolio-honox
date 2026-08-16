@@ -80,6 +80,18 @@ export async function linkCardHtml(href: string): Promise<string> {
 }
 
 // ===== TweetEmbed =====
+// fxtwitter のレスポンスのうち、ここで実際に読むフィールドだけを写したもの。
+// 外部 API なのでどれも欠けうる前提で optional にしてある。
+type FxTweet = {
+  text?: string
+  created_at?: string
+  author?: { name?: string; screen_name?: string; avatar_url?: string }
+  media?: {
+    videos?: { url?: string; thumbnail_url?: string }[]
+    photos?: { url?: string }[]
+  }
+}
+
 type TweetMedia = { type: 'photo' | 'video'; url: string; thumbnailUrl?: string }
 type TweetData = {
   authorName: string
@@ -103,19 +115,18 @@ async function fetchTweet(tweetId: string): Promise<TweetData | undefined> {
   try {
     const res = await fetch(`https://api.fxtwitter.com/i/status/${tweetId}`)
     if (!res.ok) return undefined
-    const json = (await res.json()) as { tweet?: any }
+    const json = (await res.json()) as { tweet?: FxTweet }
     const tweet = json.tweet
     if (!tweet) return undefined
 
+    // url が無いメディアは <img src="undefined"> になるだけなので、無かった扱いにする
     let media: TweetMedia | undefined
-    if (tweet.media?.videos?.[0]) {
-      media = {
-        type: 'video',
-        url: tweet.media.videos[0].url,
-        thumbnailUrl: tweet.media.videos[0].thumbnail_url,
-      }
-    } else if (tweet.media?.photos?.[0]) {
-      media = { type: 'photo', url: tweet.media.photos[0].url }
+    const video = tweet.media?.videos?.[0]
+    const photo = tweet.media?.photos?.[0]
+    if (video?.url) {
+      media = { type: 'video', url: video.url, thumbnailUrl: video.thumbnail_url }
+    } else if (photo?.url) {
+      media = { type: 'photo', url: photo.url }
     }
 
     return {

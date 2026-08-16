@@ -1,4 +1,3 @@
-import configs from "@tsparticles/configs";
 import { type ISourceOptions } from "@tsparticles/engine";
 
 export default function SnowContainer() {
