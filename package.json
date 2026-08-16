@@ -3,6 +3,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "check": "npm run typecheck && npm run lint",
     "build": "rm -rf dist .vercel/output && vite build --mode client && vite build && cp -r dist/assets .vercel/output/static/ && node scripts/fix-vercel-runtime.mjs",
     "build:cf": "rm -rf dist && vite build --mode client && DEPLOY_TARGET=cloudflare vite build && printf 'index.js\\n.vite/\\n' > dist/.assetsignore",
     "preview": "npm run build:cf && wrangler dev",
