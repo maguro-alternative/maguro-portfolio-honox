@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config'
 // テスト実行時に SSR エントリやデプロイ用の変換まで走ってしまうため。
 export default defineConfig({
   test: {
-    include: ['app/**/*.test.ts'],
+    include: ['app/**/*.test.ts', 'eslint-rules/**/*.test.js'],
     environment: 'node',
   },
 })

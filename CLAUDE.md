@@ -35,7 +35,7 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev
 - ランタイム非依存を保つこと（`node:*` や `fs` を使わない。記事読み込みは `import.meta.glob`、外部取得は `fetch`）
 - クライアントサイドのコードは2層に分ける。`app/islands/` はハイドレーション境界（= ルートから読む入口）で、島どうしで共有するフック・UI 部品は `app/features/<機能>/` に置く。共有部品を `app/islands/` に置くと、それ自体が別のハイドレーション境界になってしまう
 - 依存の向きは `app/lib/` → `app/features/` → `app/islands/` の一方通行。逆流は ESLint が弾く
-- 上記のルール（ランタイム非依存・フックの置き場所・依存の向き）は `eslint.config.js` で機械的に検査している。ルールを変えるときは設定も直す
+- 上記のルール（ランタイム非依存・フックの置き場所・依存の向き・Tailwind の動的クラス）は `eslint.config.js` で機械的に検査している。ルールを変えるときは設定も直す。自作ルールは `eslint-rules/` に置き、必ず `RuleTester` のテストを添える
 - テストは対象ファイルの隣に `*.test.ts` で置く。設定は `vitest.config.ts`（`vite.config.ts` は honox と build プラグインを積んでいてテストに使えないので分けてある）
 - `renderTalk.ts` / `renderShinomasTalk.ts` は、実測値を REF_W 基準の比率で持ち、`unit(W)` を掛けてキャンバス座標にする。**ローカル変数は必ず px 空間（`* u` 済み）に揃えること**。REF 空間のまま持ち回ると、離れた場所で掛け忘れ・二重掛けが起きる。例外は `r / BTN_R` のような px÷REF の無次元スケール係数
 - 用途の違う string は `app/lib/brand.ts` のブランド型で区別する（`ProxiedUrl` / `SourceUrl` / `CharacterSlug` / `EmblemId` / `LogoId`）。値を作れるのは各モジュールの生成関数だけで、呼び出し側で `as` を書かない
@@ -58,4 +58,4 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev
 - `app/islands/` と `app/features/` 以外でクライアントサイドの状態管理をしない
 - `wrangler.jsonc` に秘密情報を直接書かない（Secrets を使う）
 - コードのコメントにはwhy notのみを書く。
-- Tailwind のクラス名を文字列結合で組み立てない（`bg-${color}-700` は v4 の JIT が拾えない）。可変にしたい場合は完全なクラス名を持つトークンを用意する（例: `app/features/talk/theme.ts`）
+- Tailwind のクラス名を文字列結合で組み立てない（`bg-${color}-700` は v4 の JIT が拾えない）。可変にしたい場合は完全なクラス名を持つトークンを用意する（例: `app/features/talk/theme.ts`）。`local/no-dynamic-tailwind-class` が検査する

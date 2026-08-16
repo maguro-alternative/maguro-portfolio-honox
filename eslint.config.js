@@ -1,6 +1,7 @@
 import js from '@eslint/js'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
+import noDynamicTailwindClass from './eslint-rules/no-dynamic-tailwind-class.js'
 
 // Cloudflare Workers と Vercel Functions の両方で動かすため、Node 組み込みは使えない。
 // 記事読み込みは import.meta.glob、外部取得は fetch を使うこと。
@@ -80,7 +81,13 @@ export default tseslint.config(
   // --- app/ 全体：ランタイム非依存 + フックの置き場所 ---
   {
     files: ['app/**/*.{ts,tsx}'],
-    rules: { 'no-restricted-imports': restrictedImports() },
+    plugins: {
+      local: { rules: { 'no-dynamic-tailwind-class': noDynamicTailwindClass } },
+    },
+    rules: {
+      'no-restricted-imports': restrictedImports(),
+      'local/no-dynamic-tailwind-class': 'error',
+    },
   },
 
   // --- app/lib/：描画とデータの純ロジック。UI 層に依存させない ---
