@@ -37,6 +37,7 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev
 - 依存の向きは `app/lib/` → `app/features/` → `app/islands/` の一方通行。逆流は ESLint が弾く
 - 上記のルール（ランタイム非依存・フックの置き場所・依存の向き）は `eslint.config.js` で機械的に検査している。ルールを変えるときは設定も直す
 - テストは対象ファイルの隣に `*.test.ts` で置く。設定は `vitest.config.ts`（`vite.config.ts` は honox と build プラグインを積んでいてテストに使えないので分けてある）
+- `renderTalk.ts` / `renderShinomasTalk.ts` は、実測値を REF_W 基準の比率で持ち、`unit(W)` を掛けてキャンバス座標にする。**ローカル変数は必ず px 空間（`* u` 済み）に揃えること**。REF 空間のまま持ち回ると、離れた場所で掛け忘れ・二重掛けが起きる。例外は `r / BTN_R` のような px÷REF の無次元スケール係数
 - 用途の違う string は `app/lib/brand.ts` のブランド型で区別する（`ProxiedUrl` / `SourceUrl` / `CharacterSlug` / `EmblemId` / `LogoId`）。値を作れるのは各モジュールの生成関数だけで、呼び出し側で `as` を書かない
 - Cloudflare Bindings（R2 等）は `c.env` 経由でアクセスする。型は `wrangler types` で生成した `worker-configuration.d.ts` を使う
 
