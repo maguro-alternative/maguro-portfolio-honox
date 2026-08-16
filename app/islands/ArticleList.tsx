@@ -1,6 +1,6 @@
 import { useState } from 'hono/jsx'
 import type { Article } from '../lib/articles'
-import ArticleCard from '../components/features/ArticleCard'
+import ArticleCard from '../components/article/ArticleCard'
 
 const FILTERS: { label: string; value: Article['platform'] | 'all' }[] = [
   { label: 'すべて', value: 'all' },

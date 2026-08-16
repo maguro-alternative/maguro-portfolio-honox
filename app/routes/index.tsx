@@ -3,7 +3,7 @@ import WaveLayout from '../components/layout/WaveLayout'
 import Header from '../components/commonUI/Header'
 import Footer from '../components/layout/Footer'
 import Uchuemon from '../components/icon/uchuemon'
-import ArticlesSection from '../components/features/ArticlesSection'
+import ArticlesSection from '../components/article/ArticlesSection'
 import { aggregateArticles } from '../lib/aggregate'
 
 export default createRoute(async (c) => {
