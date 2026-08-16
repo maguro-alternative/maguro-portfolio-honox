@@ -16,9 +16,10 @@ maguro-alternative のポートフォリオサイト。HonoX (Hono ベースの 
 
 ```sh
 npm run dev        # 開発サーバー（Vite）
-npm run check      # typecheck + lint（push 前にこれ）
+npm run check      # typecheck + lint + test（push 前にこれ）
 npm run typecheck  # tsc --noEmit
 npm run lint       # ESLint（--fix は npm run lint:fix）
+npm run test       # Vitest（--watch は npm run test:watch）
 npm run build      # Vercel 向け 2段ビルド
 npm run deploy     # ビルド後 vercel deploy --prod
 npm run build:cf   # Cloudflare 向け 2段ビルド
@@ -35,6 +36,8 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev
 - クライアントサイドのコードは2層に分ける。`app/islands/` はハイドレーション境界（= ルートから読む入口）で、島どうしで共有するフック・UI 部品は `app/features/<機能>/` に置く。共有部品を `app/islands/` に置くと、それ自体が別のハイドレーション境界になってしまう
 - 依存の向きは `app/lib/` → `app/features/` → `app/islands/` の一方通行。逆流は ESLint が弾く
 - 上記のルール（ランタイム非依存・フックの置き場所・依存の向き）は `eslint.config.js` で機械的に検査している。ルールを変えるときは設定も直す
+- テストは対象ファイルの隣に `*.test.ts` で置く。設定は `vitest.config.ts`（`vite.config.ts` は honox と build プラグインを積んでいてテストに使えないので分けてある）
+- 用途の違う string は `app/lib/brand.ts` のブランド型で区別する（`ProxiedUrl` / `SourceUrl` / `CharacterSlug` / `EmblemId` / `LogoId`）。値を作れるのは各モジュールの生成関数だけで、呼び出し側で `as` を書かない
 - Cloudflare Bindings（R2 等）は `c.env` 経由でアクセスする。型は `wrangler types` で生成した `worker-configuration.d.ts` を使う
 
 ## ブログシステム
