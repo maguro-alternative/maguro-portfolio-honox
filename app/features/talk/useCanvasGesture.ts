@@ -1,4 +1,3 @@
-// プレビュー上のドラッグ移動 / ピンチ・ホイール拡大縮小。選択中レイヤーだけを動かす。
 import { useRef, type RefObject } from 'hono/jsx'
 import { ZOOM_MAX, ZOOM_MIN, type PhotoLayer } from './useTalkEditor'
 
@@ -23,7 +22,6 @@ export interface CanvasGestureOptions {
   updateLayer(id: string, patch: Partial<PhotoLayer>): void
 }
 
-/** canvas 要素にそのまま展開できるイベントハンドラ群 */
 export interface CanvasGestureHandlers {
   onPointerDown(e: PointerEvent): void
   onPointerMove(e: PointerEvent): void

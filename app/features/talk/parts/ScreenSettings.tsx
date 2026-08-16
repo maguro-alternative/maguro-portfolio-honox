@@ -1,8 +1,7 @@
-// 「画面設定」パネル。画面比率のセグメントトグルと、UI 部品の表示切り替え。
 import { TALK_ASPECTS, type TalkAspect } from '../../../lib/talk/renderTalk'
 import type { TalkTheme } from '../theme'
 
-/** 表示 ON/OFF できる UI 部品ひとつ分。並び順はそのままチェックボックスの並びになる。 */
+/** 並び順がそのままチェックボックスの並びになる。 */
 export interface TalkToggle {
   label: string
   value: boolean

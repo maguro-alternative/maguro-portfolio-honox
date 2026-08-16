@@ -1,24 +1,19 @@
-// セリフメーカーの操作パネルで、ゲームごとに変わる Tailwind クラスをまとめたもの。
 // Tailwind v4 の JIT はクラス名を静的に走査するので、
 // `bg-${color}-700` のような組み立てはせず、必ずフルのクラス名を書くこと。
 
 export interface TalkTheme {
-  /** 操作パネルのカード */
   panel: string
   panelTitle: string
-  /** 見出し・項目名 */
   label: string
   /** 補足テキスト（選択中の名前、枚数など） */
   muted: string
 
-  /** 選択肢ボタン（エンブレム / ロゴ）の下地 */
   swatch: string
   swatchSelected: string
   swatchIdle: string
   /** 「なし」ボタンだけに足す文字色まわり */
   swatchNone: string
 
-  /** 写真一覧の各項目 */
   itemSelected: string
   itemIdle: string
   itemLabel: string
@@ -32,11 +27,9 @@ export interface TalkTheme {
   /** 「中央に戻す」 */
   subtleButton: string
 
-  /** 画面比率のセグメントトグル */
   segmentGroup: string
   segmentActive: string
   segmentIdle: string
-  /** チェックボックスの行 */
   checkLabel: string
 }
 

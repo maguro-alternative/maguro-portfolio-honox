@@ -1,4 +1,3 @@
-// エンブレム / チームロゴのような「画像 1 枚から選ぶ」ピッカー。
 import type { TalkTheme } from '../theme'
 
 /** ShinomasEmblem / TalkLogo のどちらも構造は同じなのでこれで受ける。 */
@@ -9,7 +8,6 @@ export interface BadgeItem {
 }
 
 interface BadgePickerProps {
-  /** 「所属（エンブレム）」など */
   label: string
   /** 未選択のときに出す名前。「エンブレムなし」など */
   noneLabel: string

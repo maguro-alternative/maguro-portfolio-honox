@@ -1,4 +1,3 @@
-// 読み込んだ写真の一覧。並び替え・削除・選択中レイヤーの倍率調整までを持つ。
 import type { TalkEditor } from '../useTalkEditor'
 import { ZOOM_MAX, ZOOM_MIN } from '../useTalkEditor'
 import type { TalkTheme } from '../theme'

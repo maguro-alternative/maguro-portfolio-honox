@@ -21,8 +21,6 @@ import ScreenSettings from '../features/talk/parts/ScreenSettings'
 /** 写真で覆われない部分の色。参照スクショも黒背景。 */
 const BACKGROUND = '#000000'
 
-// ウィンドウ・ボタン・▽ は画像を使わず renderShinomasTalk 側で描いているので、
-// 素材画像として読み込むのはエンブレムだけ。
 const FONT: TalkFontConfig = {
   linkId: 'shinomas-talk-font',
   href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap',

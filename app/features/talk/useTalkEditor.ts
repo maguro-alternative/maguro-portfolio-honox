@@ -1,8 +1,6 @@
-// セリフメーカーの写真レイヤー管理。ゲーム固有の描画・UI には依存しない。
 import { useRef, useState, type RefObject } from 'hono/jsx'
 import type { TalkLayer } from '../../lib/talk/renderTalk'
 
-/** ファイルから読み込んだ写真レイヤー。一覧表示用に object URL と表示名を持つ。 */
 export interface PhotoLayer extends TalkLayer {
   url: string
   label: string
@@ -36,7 +34,6 @@ function loadFile(file: File): Promise<PhotoLayer> {
 }
 
 export interface TalkEditorOptions {
-  /** 「画像を保存」で使うファイル名 */
   downloadName: string
 }
 
@@ -48,14 +45,11 @@ export interface TalkEditor {
   canvasRef: RefObject<HTMLCanvasElement>
   selectLayer(id: string | null): void
   updateLayer(id: string, patch: Partial<PhotoLayer>): void
-  /** ファイル選択ダイアログを開いて、選ばれた画像をレイヤーとして追加する */
   openPicker(): void
   removeLayer(id: string): void
   /** dir: 1 で前面、-1 で背面へ 1 つ動かす */
   moveLayer(id: string, dir: -1 | 1): void
-  /** 位置・倍率を初期状態に戻す */
   centerLayer(id: string): void
-  /** 全レイヤーを破棄する。object URL も解放する */
   clearLayers(): void
   download(): void
 }
