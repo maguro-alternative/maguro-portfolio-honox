@@ -70,10 +70,24 @@ export default tseslint.config(
       globals: { ...globals.browser, ...globals.node },
     },
     rules: {
-      // 使い捨ての受け口として _ 始まりを許す
+      // 使い捨ての受け口として _ 始まりを許す。
+      // catch も同じ扱いにして、意図的に握りつぶす箇所を `catch (_e)` で grep できるようにする。
       '@typescript-eslint/no-unused-vars': [
         'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' },
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrors: 'all',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'CatchClause:not([param])',
+          message:
+            'エラー値を捨てると、どの失敗か後から判別できない。catch (error) で受けて logFailure() に渡すこと。本当に無視してよいなら catch (_error) と書く。',
+        },
       ],
     },
   },

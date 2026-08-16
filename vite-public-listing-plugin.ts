@@ -27,7 +27,9 @@ export default function talkLogosPlugin(): Plugin {
       return readdirSync(resolve(root, dir))
         .filter((name) => EXTENSIONS.test(name))
         .sort()
-    } catch {
+    } catch (error) {
+      // 黙って [] を返すと、ロゴが 1 枚も出ないままビルドが通ってしまう
+      console.warn(`[talk-logos-listing] ${dir} を読めませんでした`, error)
       return []
     }
   }

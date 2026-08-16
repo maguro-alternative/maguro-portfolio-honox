@@ -1,5 +1,6 @@
 // MDX の <LinkCard> / <TweetEmbed> を SSR 時に HTML 文字列へ変換する。
 // 元は Next.js の React Server Component（OGP / fxtwitter を fetch）だったものを移植。
+import { logFailure } from './logFailure'
 
 function escapeHtml(s: string): string {
   return s
@@ -51,7 +52,8 @@ async function fetchOgpData(url: string): Promise<OgpData> {
       favicon: `https://www.google.com/s2/favicons?domain=${origin}&sz=32`,
       url,
     }
-  } catch {
+  } catch (error) {
+    logFailure('embeds/ogp', error, { url })
     return fallback
   }
 }
@@ -61,7 +63,8 @@ export async function linkCardHtml(href: string): Promise<string> {
   const hostname = (() => {
     try {
       return new URL(ogp.url).hostname
-    } catch {
+    } catch (error) {
+      logFailure('embeds/link-card-host', error, { url: ogp.url })
       return ogp.url
     }
   })()
@@ -137,7 +140,8 @@ async function fetchTweet(tweetId: string): Promise<TweetData | undefined> {
       createdAt: tweet.created_at ?? '',
       media,
     }
-  } catch {
+  } catch (error) {
+    logFailure('embeds/tweet', error, { tweetId })
     return undefined
   }
 }

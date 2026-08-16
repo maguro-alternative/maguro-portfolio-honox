@@ -1,5 +1,6 @@
 import { useRef, useState, type RefObject } from 'hono/jsx'
 import type { TalkLayer } from '../../lib/talk/renderTalk'
+import { logFailure } from '../../lib/logFailure'
 
 export interface PhotoLayer extends TalkLayer {
   url: string
@@ -72,8 +73,9 @@ export function useTalkEditor({ downloadName }: TalkEditorOptions): TalkEditor {
       if (!file.type.startsWith('image/')) continue
       try {
         loaded.push(await loadFile(file))
-      } catch {
-        // 読めない画像は黙って飛ばす
+      } catch (error) {
+        // 1 枚読めなくても残りは追加する。UI への通知は未実装
+        logFailure('talk/load-file', error, { fileName: file.name })
       }
     }
     if (loaded.length === 0) return

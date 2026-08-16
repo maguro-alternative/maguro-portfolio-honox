@@ -1,3 +1,5 @@
+import { logFailure } from './logFailure'
+
 export type Article = {
   title: string
   url: string
@@ -27,7 +29,8 @@ export async function fetchQiitaArticles(
         platform: 'qiita' as const,
       })
     )
-  } catch {
+  } catch (error) {
+    logFailure('articles/qiita', error, { userId })
     return []
   }
 }
@@ -52,7 +55,8 @@ export async function fetchZennArticles(
         publishedAt: item.published_at,
         platform: 'zenn' as const,
       }))
-  } catch {
+  } catch (error) {
+    logFailure('articles/zenn', error, { userId })
     return []
   }
 }
@@ -77,7 +81,8 @@ export async function fetchNoteArticles(
         publishedAt: item.publishAt,
         platform: 'note' as const,
       }))
-  } catch {
+  } catch (error) {
+    logFailure('articles/note', error, { userId })
     return []
   }
 }

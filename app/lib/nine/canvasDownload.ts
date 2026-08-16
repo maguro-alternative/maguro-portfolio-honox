@@ -1,6 +1,7 @@
 // Canvas API で「9人」画像を生成する（外部ライブラリ不要）。
 // kagura は正方形カード、dolphin は 16:9 カードのため imageAspect で切り替える。
 import type { ProxiedUrl, SourceUrl } from './types'
+import { logFailure } from '../logFailure'
 
 interface DownloadItem {
   name: string
@@ -45,19 +46,25 @@ async function loadItemImage(
   if (!item.image) return null
   // プロキシ優先。直リンクは canvas を汚染するが、blob 経由で読むのでここでは問題ない
   const urls: string[] = [item.image, item.originalImage].filter((u) => u !== undefined)
+  // 1 本目の失敗は 2 本目で回復しうるので、全滅したときだけまとめて記録する
+  const failures: { url: string; cause: unknown }[] = []
   for (const url of urls) {
     try {
       const res = await fetch(url)
-      if (!res.ok) continue
+      if (!res.ok) {
+        failures.push({ url, cause: `HTTP ${res.status}` })
+        continue
+      }
       const blob = await res.blob()
       const blobUrl = URL.createObjectURL(blob)
       const img = await loadImage(blobUrl)
       URL.revokeObjectURL(blobUrl)
       return img
-    } catch {
-      continue
+    } catch (error) {
+      failures.push({ url, cause: error })
     }
   }
+  logFailure('nine/load-image', failures.at(-1)?.cause, { name: item.name, failures })
   return null
 }
 
