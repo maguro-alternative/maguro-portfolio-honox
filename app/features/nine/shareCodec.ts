@@ -7,8 +7,8 @@ import {
 } from './types'
 
 export interface ShareCodec {
-  encode(items: SelectedItem[], characters: NineCharacter[]): URLSearchParams
-  decode(params: URLSearchParams, characters: NineCharacter[]): SelectedItem[]
+  encode(items: SelectedItem[], characters: readonly NineCharacter[]): URLSearchParams
+  decode(params: URLSearchParams, characters: readonly NineCharacter[]): SelectedItem[]
 }
 
 /** `?s1=slug&s2=slug...` */

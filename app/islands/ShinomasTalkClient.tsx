@@ -8,7 +8,7 @@ import {
   talkCanvasSize,
   type TalkAspect,
 } from '../lib/talk/renderShinomasTalk'
-import { findShinomasEmblem, shinomasEmblems } from '../lib/talk/shinomasEmblems'
+import { findShinomasEmblem, shinomasEmblems, type EmblemId } from '../lib/talk/shinomasEmblems'
 import { useTalkEditor } from '../features/talk/useTalkEditor'
 import { useCanvasGesture } from '../features/talk/useCanvasGesture'
 import { ensureTalkFont, type TalkFontConfig } from '../features/talk/talkFont'
@@ -31,7 +31,7 @@ const FONT: TalkFontConfig = {
 // 初期値はリセット処理と共有する
 const INITIAL = {
   name: '',
-  emblemId: 'hanzo' as string | null,
+  emblemId: findShinomasEmblem('hanzo')?.id ?? null,
   text: '',
   aspect: '16:9' as TalkAspect,
   showName: true,
@@ -46,7 +46,7 @@ export default function ShinomasTalkClient() {
   const editor = useTalkEditor({ downloadName: 'shinomas-talk.png' })
   const { layers, selected, canvasRef, updateLayer } = editor
   const [name, setName] = useState(INITIAL.name)
-  const [emblemId, setEmblemId] = useState<string | null>(INITIAL.emblemId)
+  const [emblemId, setEmblemId] = useState<EmblemId | null>(INITIAL.emblemId)
   const [text, setText] = useState(INITIAL.text)
   const [aspect, setAspect] = useState<TalkAspect>(INITIAL.aspect)
   const [showName, setShowName] = useState(INITIAL.showName)
@@ -195,7 +195,7 @@ export default function ShinomasTalkClient() {
               />
             </label>
 
-            <BadgePicker
+            <BadgePicker<EmblemId>
               label="所属（エンブレム）"
               noneLabel="エンブレムなし"
               items={shinomasEmblems}

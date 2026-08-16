@@ -6,7 +6,7 @@ import {
   talkCanvasSize,
   type TalkAspect,
 } from '../lib/talk/renderTalk'
-import { findLogo, logoIdForCharacterTeam, talkLogos } from '../lib/talk/logos'
+import { findLogo, logoIdForCharacterTeam, talkLogos, type LogoId } from '../lib/talk/logos'
 import WaveFooter from '../components/layout/WaveFooter'
 import MakerTerms from '../components/layout/MakerTerms'
 import { dolphinCharacters } from '../lib/nine/dolphinCharacters'
@@ -35,7 +35,7 @@ const FONT: TalkFontConfig = {
 // 初期値はリセット処理と共有する
 const INITIAL = {
   name: '',
-  logoId: 'kirishima' as string | null,
+  logoId: findLogo('kirishima')?.id ?? null,
   text: '',
   aspect: '16:9' as TalkAspect,
   showPlate: true,
@@ -50,7 +50,7 @@ export default function DolphinTalkClient() {
   const editor = useTalkEditor({ downloadName: 'dolphin-wave-talk.png' })
   const { layers, selected, canvasRef, updateLayer } = editor
   const [name, setName] = useState(INITIAL.name)
-  const [logoId, setLogoId] = useState<string | null>(INITIAL.logoId)
+  const [logoId, setLogoId] = useState<LogoId | null>(INITIAL.logoId)
   const [text, setText] = useState(INITIAL.text)
   const [aspect, setAspect] = useState<TalkAspect>(INITIAL.aspect)
   const [showPlate, setShowPlate] = useState(INITIAL.showPlate)
@@ -211,7 +211,7 @@ export default function DolphinTalkClient() {
             />
           </label>
 
-          <BadgePicker
+          <BadgePicker<LogoId>
             label="チーム（ロゴ）"
             noneLabel="ロゴなし"
             items={talkLogos}

@@ -3,11 +3,14 @@
 // ファイル名の列挙はビルド時（vite-public-listing-plugin.ts）に済ませてあり、
 // 画像そのものは public のパスからそのまま配信される。
 import { files } from 'virtual:shinomas-emblems'
+import type { Brand } from '../brand'
 
 const DIR = '/talk/shinomas'
 
+export type EmblemId = Brand<string, 'EmblemId'>
+
 export interface ShinomasEmblem {
-  id: string
+  id: EmblemId
   label: string
   src: string
 }
@@ -53,7 +56,7 @@ const LABELS: Record<string, string> = {
  * ファイル名 → id。
  * 「logo_」「logo-」の接頭辞、`.svg.png` のような多重拡張子、記号や大小文字の揺れを吸収する。
  */
-function toId(file: string) {
+function toId(file: string): EmblemId {
   return file
     .replace(/^logo[-_]/i, '')
     .replace(/(\.[a-z0-9]+)+$/i, '')
@@ -62,7 +65,7 @@ function toId(file: string) {
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
     .toLowerCase()
-    .replace(/-logo$/, '')
+    .replace(/-logo$/, '') as EmblemId
 }
 
 export const shinomasEmblems: ShinomasEmblem[] = files

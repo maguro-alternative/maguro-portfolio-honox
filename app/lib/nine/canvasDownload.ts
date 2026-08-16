@@ -1,9 +1,11 @@
 // Canvas API で「9人」画像を生成する（外部ライブラリ不要）。
 // kagura は正方形カード、dolphin は 16:9 カードのため imageAspect で切り替える。
+import type { ProxiedUrl, SourceUrl } from './types'
+
 interface DownloadItem {
   name: string
-  image?: string
-  originalImage?: string
+  image?: ProxiedUrl
+  originalImage?: SourceUrl
 }
 
 function roundRect(
@@ -41,7 +43,8 @@ async function loadItemImage(
   item: DownloadItem
 ): Promise<HTMLImageElement | null> {
   if (!item.image) return null
-  const urls = [item.image, item.originalImage].filter(Boolean) as string[]
+  // プロキシ優先。直リンクは canvas を汚染するが、blob 経由で読むのでここでは問題ない
+  const urls: string[] = [item.image, item.originalImage].filter((u) => u !== undefined)
   for (const url of urls) {
     try {
       const res = await fetch(url)

@@ -3,7 +3,7 @@ import type { ShareCodec } from './shareCodec'
 import { createEmptyItems, toSelectedItem, type NineCharacter, type SelectedItem } from './types'
 
 export interface NineConfig {
-  characters: NineCharacter[]
+  characters: readonly NineCharacter[]
   /** シェア URL のパス。例: '/nine/kagura' */
   pagePath: string
   /** OG 画像 API のパス。例: '/api/og/kagura' */

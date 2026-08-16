@@ -1,19 +1,22 @@
 import type { TalkTheme } from '../theme'
 
-/** ShinomasEmblem / TalkLogo のどちらも構造は同じなのでこれで受ける。 */
-export interface BadgeItem {
-  id: string
+/**
+ * ShinomasEmblem / TalkLogo のどちらも構造は同じなのでこれで受ける。
+ * id をジェネリックにしてあるので、EmblemId の一覧に LogoId を渡すとコンパイルが通らない。
+ */
+export interface BadgeItem<Id extends string = string> {
+  id: Id
   label: string
   src: string
 }
 
-interface BadgePickerProps {
+interface BadgePickerProps<Id extends string> {
   label: string
   /** 未選択のときに出す名前。「エンブレムなし」など */
   noneLabel: string
-  items: BadgeItem[]
-  value: string | null
-  onChange(id: string | null): void
+  items: readonly BadgeItem<Id>[]
+  value: Id | null
+  onChange(id: Id | null): void
   /**
    * ボタンの寸法。エンブレムは正方形、チームロゴは横長なので呼び出し側で決める。
    * 例: 'h-11 w-11'
@@ -22,7 +25,7 @@ interface BadgePickerProps {
   theme: TalkTheme
 }
 
-export default function BadgePicker({
+export default function BadgePicker<Id extends string>({
   label,
   noneLabel,
   items,
@@ -30,7 +33,7 @@ export default function BadgePicker({
   onChange,
   swatchSize,
   theme,
-}: BadgePickerProps) {
+}: BadgePickerProps<Id>) {
   const currentLabel = items.find((i) => i.id === value)?.label ?? noneLabel
 
   return (

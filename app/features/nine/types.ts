@@ -1,16 +1,15 @@
-export interface NineCharacter {
-  name: string
-  reading: string
-  team: string
-  slug: string
-  imageUrl: string
-}
+import { proxyUrl, type CharacterSlug, type NineCharacter, type ProxiedUrl, type SourceUrl } from '../../lib/nine/types'
+
+export { proxyUrl }
+export type { CharacterSlug, NineCharacter, ProxiedUrl, SourceUrl }
 
 export interface SelectedItem {
   name: string
-  image?: string
-  originalImage?: string
-  slug?: string
+  /** canvas に描くのはこちら */
+  image?: ProxiedUrl
+  /** プロキシが落ちたときのフォールバック先 */
+  originalImage?: SourceUrl
+  slug?: CharacterSlug
 }
 
 export const SLOT_COUNT = 9
@@ -19,12 +18,6 @@ export function createEmptyItems(): SelectedItem[] {
   return Array(SLOT_COUNT)
     .fill(null)
     .map(() => ({ name: '' }))
-}
-
-// 公式サイトの画像は直リンクだと CORS で canvas が汚染され toDataURL が使えなくなるため、
-// 自前のプロキシ経由にしている。
-export function proxyUrl(imageUrl: string): string {
-  return `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
 }
 
 export function toSelectedItem(char: NineCharacter): SelectedItem {

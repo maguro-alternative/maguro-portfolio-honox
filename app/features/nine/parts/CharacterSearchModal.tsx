@@ -4,7 +4,7 @@ import { proxyUrl, type NineCharacter } from '../types'
 interface CharacterSearchModalProps {
   isOpen: boolean
   panelIndex: number
-  characters: NineCharacter[]
+  characters: readonly NineCharacter[]
   onSelect(char: NineCharacter): void
   onClose(): void
 }

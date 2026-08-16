@@ -1,12 +1,6 @@
-export interface DolphinCharacter {
-  name: string;
-  reading: string;
-  team: string;
-  slug: string;
-  imageUrl: string;
-}
+import { defineCharacters } from './types'
 
-export const dolphinCharacters: DolphinCharacter[] = [
+export const dolphinCharacters = defineCharacters([
   // KIRISHIMA
   { name: '咲宮 入華', reading: 'さきみや いるか', team: 'KIRISHIMA', slug: 'iruka-sakimiya', imageUrl: 'https://hpgames.jp/dolphin-wave/assets/img/chara/iruka-sakimiya/ogp.png' },
   { name: '都条 みちる', reading: 'とじょう みちる', team: 'KIRISHIMA', slug: 'michiru-tojo', imageUrl: 'https://hpgames.jp/dolphin-wave/assets/img/chara/michiru-tojo/ogp.png' },
@@ -52,4 +46,4 @@ export const dolphinCharacters: DolphinCharacter[] = [
   { name: '羽仁原 はる', reading: 'はにはら はる', team: 'GRIMO→GOETIA', slug: 'haru-hanihara', imageUrl: 'https://hpgames.jp/dolphin-wave/assets/img/chara/haru-hanihara/ogp.png' },
   { name: 'ユノ', reading: 'ゆの', team: 'GRIMO→GOETIA', slug: 'yuno', imageUrl: 'https://hpgames.jp/dolphin-wave/assets/img/chara/yuno/ogp.png' },
   { name: '玄口 むうる', reading: 'くろくち むうる', team: 'GRIMO→GOETIA', slug: 'muru-kurokuchi', imageUrl: 'https://hpgames.jp/dolphin-wave/assets/img/chara/muru-kurokuchi/ogp.png' },
-];
+])

@@ -1,12 +1,6 @@
-export interface KaguraCharacter {
-  name: string;
-  reading: string;
-  team: string;
-  slug: string;
-  imageUrl: string;
-}
+import { defineCharacters } from './types'
 
-export const kaguraCharacters: KaguraCharacter[] = [
+export const kaguraCharacters = defineCharacters([
   // 国立半蔵学院
   { name: '飛鳥', reading: 'あすか', team: '国立半蔵学院', slug: 'asuka', imageUrl: 'https://hpgames.jp/shinomas/share/images/chara_icon/chara_btn_asuka.png' },
   { name: '斑鳩', reading: 'いかるが', team: '国立半蔵学院', slug: 'ikaruga', imageUrl: 'https://hpgames.jp/shinomas/share/images/chara_icon/chara_btn_ikaruga.png' },
@@ -125,4 +119,4 @@ export const kaguraCharacters: KaguraCharacter[] = [
   { name: '零姫', reading: 'れき', team: 'NewWave 戦姫衆', slug: 'reki', imageUrl: 'https://image02.seesaawiki.jp/k/w/kagranw/ac74582c5406486c.jpg' },
   { name: '愛姫', reading: 'あき', team: 'NewWave 戦姫衆', slug: 'aki', imageUrl: 'https://image02.seesaawiki.jp/k/w/kagranw/a45e3385d207088e.jpg' },
   { name: '愉姫', reading: 'ゆき', team: 'NewWave 戦姫衆', slug: 'yuki', imageUrl: 'https://image02.seesaawiki.jp/k/w/kagranw/a6d38c753ac2eda7.jpg' },
-];
+])
