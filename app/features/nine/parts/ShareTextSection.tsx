@@ -1,12 +1,24 @@
+import { useState } from 'hono/jsx'
+import { copyText } from '../../../lib/clipboard'
+
 interface ShareTextSectionProps {
   shareText: string
-  onCopy(): void
   disabled?: boolean
 }
 
-export default function ShareTextSection({ shareText, onCopy, disabled }: ShareTextSectionProps) {
+export default function ShareTextSection({ shareText, disabled }: ShareTextSectionProps) {
+  // コピーの成否はこのボタン自身で伝える。alert はスレッドを止めるうえ、
+  // 失敗しても出てしまう（以前は writeText を await していなかった）
+  const [copied, setCopied] = useState<'idle' | 'ok' | 'failed'>('idle')
+
   const openShare = (base: string) => {
     window.open(`${base}${encodeURIComponent(shareText)}`, '_blank', 'width=550,height=420')
+  }
+
+  const handleCopy = async () => {
+    const ok = await copyText(shareText)
+    setCopied(ok ? 'ok' : 'failed')
+    setTimeout(() => setCopied('idle'), 2000)
   }
 
   if (disabled) {
@@ -29,10 +41,11 @@ export default function ShareTextSection({ shareText, onCopy, disabled }: ShareT
         <p className="whitespace-pre-wrap break-all text-xs text-slate-800">{shareText}</p>
         <div className="mt-4 flex gap-2 border-t border-slate-200 pt-3">
           <button
-            onClick={onCopy}
+            onClick={() => void handleCopy()}
+            aria-live="polite"
             className="rounded border border-slate-300 bg-white px-3 py-1 text-xs text-slate-700 hover:bg-slate-50"
           >
-            コピー
+            {copied === 'ok' ? 'コピーしました' : copied === 'failed' ? 'コピーできません' : 'コピー'}
           </button>
           <button
             onClick={() => openShare('https://twitter.com/intent/tweet?text=')}

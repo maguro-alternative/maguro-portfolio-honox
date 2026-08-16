@@ -128,11 +128,7 @@ export default function DolphinClient() {
           </div>
         )}
 
-        <ShareTextSection
-          shareText={nine.shareText}
-          onCopy={nine.copyShareText}
-          disabled={nine.selectedCount < 9}
-        />
+        <ShareTextSection shareText={nine.shareText} disabled={nine.selectedCount < 9} />
 
         <CharacterSearchModal
           isOpen={modalOpen}

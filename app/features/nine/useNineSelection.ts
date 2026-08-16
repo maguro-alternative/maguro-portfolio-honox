@@ -28,7 +28,6 @@ export interface NineSelection {
   randomize(): void
   reset(): void
   clearPanel(index: number): void
-  copyShareText(): void
 }
 
 export function useNineSelection(config: NineConfig): NineSelection {
@@ -85,11 +84,6 @@ export function useNineSelection(config: NineConfig): NineSelection {
 
     reset() {
       applyItems(createEmptyItems())
-    },
-
-    copyShareText() {
-      navigator.clipboard.writeText(shareText)
-      alert('コピーしました！')
     },
 
     clearPanel(index) {
