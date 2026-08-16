@@ -1,5 +1,3 @@
-// app/components/features/Toc.tsx
-// 記事の目次。サーバーで生成した見出しリストを受け取って描画する。
 import type { TocItem } from '../../lib/markdown'
 
 export default function Toc({ items }: { items: TocItem[] }) {

@@ -1,7 +1,3 @@
-// app/islands/TocSpy.tsx （任意）
-// スクロール位置に応じて目次の現在地をハイライトする。
-// 使う場合は Toc コンポーネントの <nav> を島にするか、
-// 記事ページにこの島を1つ置く（DOMを id で監視する）。
 import { useEffect } from 'hono/jsx'
 
 export default function TocSpy() {

@@ -29,11 +29,9 @@ export default function SnowContainer() {
       },
       size: {
         value: { min: 1, max: 6 },
-        //random: true,
         animation: {
           enable: false,
           speed: 20,
-          //size_min: 0.1,
           sync: false
         }
       },

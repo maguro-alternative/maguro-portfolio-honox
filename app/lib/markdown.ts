@@ -1,7 +1,3 @@
-// 変更点:
-//  1) marked-highlight + highlight.js でコードをシンタックスハイライト
-//  2) h2 / h3 に id を付与し、目次(TOC)用の見出しリストを抽出
-//  3) renderBlogContent が { html, toc } を返すように
 import { Marked } from 'marked'
 import { markedHighlight } from 'marked-highlight'
 import hljs from 'highlight.js'
@@ -14,7 +10,6 @@ function getAttr(attrs: string, name: string): string | undefined {
   return m?.[1]
 }
 
-// highlight.js を組み込んだ marked インスタンス
 const marked = new Marked(
   markedHighlight({
     emptyLangClass: 'hljs',

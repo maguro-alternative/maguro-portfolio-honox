@@ -38,7 +38,7 @@ export default createRoute(async (c) => {
           ← Articles に戻る
         </a>
 
-        {/* タイトルブロック */}・
+        {/* タイトルブロック */}
         <header className="mb-5">
           <div className="flex flex-wrap items-center gap-2.5 mb-3.5">
             <span className="text-xs font-bold text-white bg-[#FF7A6B]/90 px-2.5 py-0.5 rounded-full">

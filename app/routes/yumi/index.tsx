@@ -9,7 +9,6 @@ const backgroundImages = [
 ];
 
 export default createRoute(async (c) => {
-  // ランダムな背景画像を選択
   const randomIndex = Math.floor(Math.random() * backgroundImages.length);
   const selectedBackground = backgroundImages[randomIndex];
 
