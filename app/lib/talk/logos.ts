@@ -3,11 +3,14 @@
 // ファイル名の列挙はビルド時（vite-public-listing-plugin.ts）に済ませてあり、
 // 画像そのものは public のパスからそのまま配信される。
 import { files } from 'virtual:talk-logos'
+import type { Brand } from '../brand'
 
 const DIR = '/talk/dolphin'
 
+export type LogoId = Brand<string, 'LogoId'>
+
 export interface TalkLogo {
-  id: string
+  id: LogoId
   label: string
   src: string
 }
@@ -51,7 +54,7 @@ const LABELS: Record<string, string> = {
  * ファイル名 → id。
  * 「logo_」「logo-」の接頭辞、`.svg.png` のような多重拡張子、記号や大小文字の揺れを吸収する。
  */
-function toId(file: string) {
+function toId(file: string): LogoId {
   return file
     .replace(/^logo[-_]/i, '')
     .replace(/(\.[a-z0-9]+)+$/i, '')
@@ -60,7 +63,7 @@ function toId(file: string) {
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
     .toLowerCase()
-    .replace(/-logo$/, '')
+    .replace(/-logo$/, '') as LogoId
 }
 
 export const talkLogos: TalkLogo[] = files
@@ -92,6 +95,6 @@ const LOGO_BY_CHARACTER_TEAM: Record<string, string> = {
   'GRIMO→GOETIA': 'grimo-goetia',
 }
 
-export function logoIdForCharacterTeam(team: string): string | null {
-  return LOGO_BY_CHARACTER_TEAM[team] ?? null
+export function logoIdForCharacterTeam(team: string): LogoId | null {
+  return findLogo(LOGO_BY_CHARACTER_TEAM[team] ?? null)?.id ?? null
 }
