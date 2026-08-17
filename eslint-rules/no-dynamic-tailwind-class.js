@@ -32,7 +32,6 @@ function safeGluedBefore(expr) {
   return values !== null && values.every((v) => v === '' || /^\s/.test(v))
 }
 
-/** 直後に密着してよいか */
 function safeGluedAfter(expr) {
   const values = literalStrings(expr)
   return values !== null && values.every((v) => v === '' || /\s$/.test(v))

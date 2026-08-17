@@ -1,4 +1,3 @@
-// プレビュー上のドラッグ / ピンチ / ホイールの計算。
 // DOM を触らないので、フックを通さずそのままテストできる。
 import { ZOOM_MAX, ZOOM_MIN, clamp, type LayerPatch } from './layerOps'
 
@@ -7,7 +6,6 @@ export interface Point {
   y: number
 }
 
-/** ジェスチャ開始時点のレイヤー。id と変形の 3 値だけあればよい */
 export interface GestureLayer {
   id: string
   offX: number
@@ -31,7 +29,7 @@ export function distance(a: Point, b: Point): number {
   return Math.hypot(a.x - b.x, a.y - b.y)
 }
 
-/** 押されているポインタからジェスチャの起点を作る。3 本以上と 0 本は扱わない */
+/** 3 本以上と 0 本は扱わない */
 export function beginGesture(layer: GestureLayer, points: readonly Point[]): GestureState | null {
   const base = {
     layerId: layer.id,

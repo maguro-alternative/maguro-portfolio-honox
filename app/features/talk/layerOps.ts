@@ -5,7 +5,6 @@ export function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
 }
 
-/** ジェスチャやスライダーがレイヤーへ当てる差分 */
 export interface LayerPatch {
   offX?: number
   offY?: number
@@ -13,7 +12,6 @@ export interface LayerPatch {
 }
 
 /**
- * id のレイヤーを dir 方向へ 1 つ動かした配列を返す。
  * 端で動かせないときは受け取った配列をそのまま返す（再描画を起こさないため）。
  * dir: 1 で前面（配列の後ろ）、-1 で背面。
  */

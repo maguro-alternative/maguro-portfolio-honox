@@ -1,6 +1,4 @@
 /**
- * /api/image-proxy が中継してよい相手を決める。
- *
  * サーバ側 fetch なので、ここを緩めると任意の URL を取りに行かせられる（SSRF）。
  * hostname.includes(...) だと `hpgames.jp.example.com` が通ってしまうため、
  * 完全一致か「.」区切りのサブドメインだけを許す。
@@ -13,7 +11,6 @@ export function isAllowedImageHost(hostname: string): boolean {
 }
 
 /**
- * 中継先として妥当なら URL を、そうでなければ null を返す。
  * 判定に通らない理由（不正な URL / 非 https / 許可外ホスト）は呼び出し側で区別しない。
  * どれも「その URL は中継しない」で扱いが同じで、外に理由を出すと探索の助けになるため。
  */
