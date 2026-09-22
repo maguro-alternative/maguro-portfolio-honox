@@ -95,95 +95,111 @@ export function buildOgSvg({
 }
 
 // ===== nine（9キャラ選択）用 OG =====
+// canvasDownload.ts の保存画像と同じカード（画像 + 下の黒帯に「番号. 名前」）を並べる。
+// 1200x630 に 3x3 を縦で詰めると横が余るので、パネルはグリッド幅に合わせて中央に置く。
 export type NineOgCharacter = { name: string; imageUrl: string }
 
 type NineOgOptions = {
   title: string
   characters: NineOgCharacter[] // 長さ9
+  imageAspect: 'square' | 'video'
   gradFrom: string
   gradTo: string
   cellFill: string
   cellStroke: string
-  nameColor: string
   footer: string
 }
 
 export function buildNineOgSvg({
   title,
   characters,
+  imageAspect,
   gradFrom,
   gradTo,
   cellFill,
   cellStroke,
-  nameColor,
   footer,
 }: NineOgOptions): string {
   const hasAny = characters.some((c) => c.name !== '')
-  const cellW = 320
-  const cellH = 110
-  const gapX = 12
-  const gapY = 10
-  const gridX0 = 108
-  const gridY0 = 200
+  const W = 1200
+  const H = 630
+  const margin = 12
+  const pad = 12
+  const gap = 8
+  const titleAreaH = 50
+  const labelH = 28
+  const radius = 8
 
-  const shortName = (n: string) => (n.length > 8 ? n.slice(0, 7) + '…' : n)
+  const panelH = H - margin * 2
+  const gridH = panelH - titleAreaH - pad
+  const cardH = (gridH - gap * 2) / 3
+  const imgH = cardH - labelH
+  // 右下のフッターと重ならない幅に抑える。はみ出す分は slice で左右が切れる
+  const footerSpace = 220
+  const maxCardW = Math.floor((W - footerSpace * 2 - pad * 2 - gap * 2) / 3)
+  const cardW = Math.min(imageAspect === 'video' ? Math.round((imgH * 16) / 9) : imgH, maxCardW)
+  const gridW = cardW * 3 + gap * 2
+  const panelW = gridW + pad * 2
+  const panelX = (W - panelW) / 2
+  const gridX0 = panelX + pad
+  const gridY0 = margin + titleAreaH
 
   const cells = characters
     .map((ch, i) => {
-      const col = i % 3
-      const row = Math.floor(i / 3)
-      const x = gridX0 + col * (cellW + gapX)
-      const y = gridY0 + row * (cellH + gapY)
-      const cx = x + cellW / 2
+      const x = gridX0 + (i % 3) * (cardW + gap)
+      const y = gridY0 + Math.floor(i / 3) * (cardH + gap)
+      const cx = x + cardW / 2
       const selected = ch.name !== ''
-      const bg = `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="12" fill="${
-        selected ? cellFill : '#f8fafc'
-      }" stroke="${selected ? cellStroke : '#cbd5e1'}" stroke-width="2"${
-        selected ? '' : ' stroke-dasharray="6 4"'
-      } />`
-
-      if (ch.imageUrl) {
-        const img = `<image href="${escapeXml(
-          ch.imageUrl
-        )}" x="${cx - 34}" y="${y + 6}" width="68" height="68" preserveAspectRatio="xMidYMid meet" />`
-        const name = `<text x="${cx}" y="${
-          y + 96
-        }" text-anchor="middle" font-size="15" font-weight="bold" fill="${nameColor}" font-family="sans-serif">${escapeXml(
-          shortName(ch.name)
+      const clipId = `card${i}`
+      const clip = `<clipPath id="${clipId}"><rect x="${x}" y="${y}" width="${cardW}" height="${cardH}" rx="${radius}" /></clipPath>`
+      const image = ch.imageUrl
+        ? `<image href="${escapeXml(
+            ch.imageUrl
+          )}" x="${x}" y="${y}" width="${cardW}" height="${imgH}" preserveAspectRatio="xMidYMid slice" />`
+        : `<rect x="${x}" y="${y}" width="${cardW}" height="${imgH}" fill="${
+            selected ? cellFill : '#e2e8f0'
+          }" /><text x="${cx}" y="${
+            y + imgH / 2 + 10
+          }" text-anchor="middle" font-size="28" fill="#94a3b8" font-family="sans-serif">?</text>`
+      const label =
+        `<rect x="${x}" y="${y + imgH}" width="${cardW}" height="${labelH}" fill="#0f172a" />` +
+        `<text x="${cx}" y="${
+          y + imgH + labelH / 2 + 5
+        }" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff" font-family="sans-serif">${escapeXml(
+          `${i + 1}. ${ch.name || '未選択'}`
         )}</text>`
-        return bg + img + name
-      }
-
-      const label = `<text x="${cx}" y="${
-        y + cellH / 2 + 7
-      }" text-anchor="middle" font-size="${
-        selected ? 20 : 18
-      }" ${selected ? 'font-weight="bold"' : ''} fill="${
-        selected ? nameColor : '#94a3b8'
-      }" font-family="sans-serif">${escapeXml(selected ? shortName(ch.name) : '?')}</text>`
-      return bg + label
+      const border = `<rect x="${x}" y="${y}" width="${cardW}" height="${cardH}" rx="${radius}" fill="none" stroke="${
+        selected ? cellStroke : '#cbd5e1'
+      }" stroke-width="2" />`
+      return `${clip}<g clip-path="url(#${clipId})">${image}${label}</g>${border}`
     })
     .join('\n  ')
 
   const emptyMsg = hasAny
     ? ''
-    : `<text x="600" y="330" text-anchor="middle" font-size="22" fill="#64748b" font-family="sans-serif">9人のキャラクターを選んで画像として保存</text>`
+    : `<text x="${W / 2}" y="${
+        gridY0 + gridH / 2
+      }" text-anchor="middle" font-size="22" fill="#64748b" font-family="sans-serif">9人のキャラクターを選んで画像として保存</text>`
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="${gradFrom}" />
       <stop offset="100%" stop-color="${gradTo}" />
     </linearGradient>
   </defs>
-  <rect width="1200" height="630" fill="url(#bg)" />
-  <rect x="60" y="60" width="1080" height="510" rx="24" fill="#ffffff" />
-  <text x="600" y="140" text-anchor="middle" font-size="40" font-weight="bold" fill="#1e293b" font-family="sans-serif">${escapeXml(
+  <rect width="${W}" height="${H}" fill="url(#bg)" />
+  <rect x="${panelX}" y="${margin}" width="${panelW}" height="${panelH}" rx="16" fill="#ffffff" />
+  <text x="${W / 2}" y="${
+    margin + 36
+  }" text-anchor="middle" font-size="30" font-weight="bold" fill="#1e293b" font-family="sans-serif">${escapeXml(
     title
   )}</text>
   ${hasAny ? cells : emptyMsg}
-  <text x="600" y="600" text-anchor="middle" font-size="20" fill="rgba(255,255,255,0.95)" font-family="sans-serif">${escapeXml(
+  <text x="${W - 24}" y="${
+    H - 24
+  }" text-anchor="end" font-size="20" fill="rgba(255,255,255,0.95)" font-family="sans-serif">${escapeXml(
     footer
   )}</text>
 </svg>

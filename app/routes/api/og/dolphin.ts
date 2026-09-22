@@ -17,11 +17,11 @@ export default createRoute((c) => {
   const svg = buildNineOgSvg({
     title,
     characters,
+    imageAspect: 'video',
     gradFrom: '#667eea',
     gradTo: '#764ba2',
     cellFill: '#eef2ff',
     cellStroke: '#818cf8',
-    nameColor: '#3730a3',
     footer: '🐬 ドルフィンウェーブ',
   })
 

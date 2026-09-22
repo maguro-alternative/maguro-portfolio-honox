@@ -35,11 +35,11 @@ export default createRoute((c) => {
   const svg = buildNineOgSvg({
     title,
     characters,
+    imageAspect: 'square',
     gradFrom: '#f472b6',
     gradTo: '#c084fc',
     cellFill: '#fdf2f8',
     cellStroke: '#f472b6',
-    nameColor: '#9d174d',
     footer: '🌸 閃乱カグラ',
   })
 
