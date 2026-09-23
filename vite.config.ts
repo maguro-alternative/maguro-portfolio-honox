@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 import honox from 'honox/vite'
 import { defineConfig } from 'vite'
 import talkLogos from './vite-public-listing-plugin'
+import resvgWasm from './vite-resvg-wasm-plugin'
 
 // デプロイ先は DEPLOY_TARGET で切り替える（未指定なら従来どおり Vercel）。
 // client ビルドの成果物（dist/）は両者で共通。
@@ -37,6 +38,7 @@ export default defineConfig(({ command, mode }) => {
       }),
       tailwindcss(),
       talkLogos(),
+      resvgWasm(),
       build(),
     ],
   }

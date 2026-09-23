@@ -8,3 +8,8 @@ declare module 'virtual:talk-logos' {
 declare module 'virtual:shinomas-emblems' {
   export const files: string[]
 }
+
+declare module 'virtual:resvg-wasm' {
+  const wasm: WebAssembly.Module | Uint8Array
+  export default wasm
+}

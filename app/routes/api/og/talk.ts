@@ -1,5 +1,6 @@
 import { createRoute } from 'honox/factory'
 import { buildTalkOgSvg } from '../../../lib/og'
+import { ogImageResponse } from '../../../lib/ogPng'
 
 export default createRoute((c) => {
   const name = c.req.query('name') || 'セリフメーカー'
@@ -13,8 +14,5 @@ export default createRoute((c) => {
     footer: 'マグロポートフォリオ',
   })
 
-  return c.body(svg, 200, {
-    'Content-Type': 'image/svg+xml',
-    'Cache-Control': 'public, max-age=86400',
-  })
+  return ogImageResponse(svg)
 })

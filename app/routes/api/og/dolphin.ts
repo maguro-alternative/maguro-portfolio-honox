@@ -1,5 +1,6 @@
 import { createRoute } from 'honox/factory'
 import { buildNineOgSvg, type NineOgCharacter } from '../../../lib/og'
+import { ogImageResponse } from '../../../lib/ogPng'
 import { dolphinCharacters } from '../../../lib/nine/dolphinCharacters'
 
 export default createRoute((c) => {
@@ -22,11 +23,8 @@ export default createRoute((c) => {
     gradTo: '#764ba2',
     cellFill: '#eef2ff',
     cellStroke: '#818cf8',
-    footer: '🐬 ドルフィンウェーブ',
+    footer: 'ドルフィンウェーブ',
   })
 
-  return c.body(svg, 200, {
-    'Content-Type': 'image/svg+xml',
-    'Cache-Control': 'public, max-age=86400',
-  })
+  return ogImageResponse(svg)
 })

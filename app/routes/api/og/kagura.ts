@@ -1,5 +1,6 @@
 import { createRoute } from 'honox/factory'
 import { buildNineOgSvg, type NineOgCharacter } from '../../../lib/og'
+import { ogImageResponse } from '../../../lib/ogPng'
 import { kaguraCharacters } from '../../../lib/nine/kaguraCharacters'
 
 export default createRoute((c) => {
@@ -40,11 +41,8 @@ export default createRoute((c) => {
     gradTo: '#c084fc',
     cellFill: '#fdf2f8',
     cellStroke: '#f472b6',
-    footer: '🌸 閃乱カグラ',
+    footer: '閃乱カグラ',
   })
 
-  return c.body(svg, 200, {
-    'Content-Type': 'image/svg+xml',
-    'Cache-Control': 'public, max-age=86400',
-  })
+  return ogImageResponse(svg)
 })

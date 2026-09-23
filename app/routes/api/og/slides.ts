@@ -1,5 +1,6 @@
 import { createRoute } from 'honox/factory'
 import { buildOgSvg } from '../../../lib/og'
+import { ogImageResponse } from '../../../lib/ogPng'
 
 export default createRoute((c) => {
   const title = c.req.query('title') || 'スライド'
@@ -15,8 +16,5 @@ export default createRoute((c) => {
     accent: '#c084fc',
   })
 
-  return c.body(svg, 200, {
-    'Content-Type': 'image/svg+xml',
-    'Cache-Control': 'public, max-age=86400',
-  })
+  return ogImageResponse(svg)
 })
