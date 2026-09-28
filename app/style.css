@@ -146,25 +146,16 @@ h1 {
 }
 
 /* ===== Blog article content ===== */
-/* 本文を不透明ダークガラスのパネルに乗せ、波背景と読書面を分離 */
+.blog-paper {
+  --blog-paper: #0f2729;
+  background: var(--blog-paper);
+  color: #fff;
+}
+
 .blog-content {
-  background: rgba(8, 26, 28, 0.62);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 18px;
-  padding: 2.4rem 2.5rem;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
   color: rgba(255, 255, 255, 0.88);
   font-size: 1rem;
   line-height: 1.95;
-}
-
-@media (max-width: 640px) {
-  .blog-content {
-    padding: 1.5rem 1.25rem;
-    border-radius: 14px;
-  }
 }
 
 /* ---- 見出し（上余白＞下余白でリズムを作る） ---- */
