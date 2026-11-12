@@ -5,7 +5,7 @@ import SlideViewer from '../../islands/SlideViewer'
 
 export default createRoute(async (c) => {
   const slug = c.req.param('slug')
-  const deck = getSlideDeck(slug)
+  const deck = slug ? getSlideDeck(slug) : undefined
 
   if (!deck) {
     return c.notFound()

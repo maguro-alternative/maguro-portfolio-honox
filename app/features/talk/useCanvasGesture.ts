@@ -3,7 +3,7 @@ import type { PhotoLayer } from './useTalkEditor'
 import { beginGesture, gesturePatch, wheelZoom, type GestureState, type Point } from './gesture'
 
 export interface CanvasGestureOptions {
-  canvasRef: RefObject<HTMLCanvasElement>
+  canvasRef: RefObject<HTMLCanvasElement | null>
   selected: PhotoLayer | null
   updateLayer(id: string, patch: Partial<PhotoLayer>): void
 }
