@@ -7,7 +7,7 @@ import { renderBlogContent, estimateReadingMinutes } from '../../lib/markdown'
 
 export default createRoute(async (c) => {
   const slug = c.req.param('slug')
-  const post = getBlogPost(slug)
+  const post = slug ? getBlogPost(slug) : undefined
 
   if (!post) {
     return c.notFound()
