@@ -131,7 +131,7 @@ export async function ogImageResponse(svg: string): Promise<Response> {
   const headers = { 'Cache-Control': 'public, max-age=86400' }
   try {
     const png = await svgToPng(svg)
-    return new Response(png, {
+    return new Response(new Uint8Array(png), {
       headers: { ...headers, 'Content-Type': 'image/png' },
     })
   } catch (error) {

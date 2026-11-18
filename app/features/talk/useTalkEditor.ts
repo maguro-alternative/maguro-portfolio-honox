@@ -43,7 +43,7 @@ export interface TalkEditor {
   layers: PhotoLayer[]
   selectedId: string | null
   selected: PhotoLayer | null
-  canvasRef: RefObject<HTMLCanvasElement>
+  canvasRef: RefObject<HTMLCanvasElement | null>
   selectLayer(id: string | null): void
   updateLayer(id: string, patch: Partial<PhotoLayer>): void
   openPicker(): void
