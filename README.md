@@ -33,10 +33,10 @@ npm run smoke -- <url> [manifest]  # デプロイ後の本番確認
 
 | 環境 | 仕組み | 備考 |
 |------|--------|------|
-| Cloudflare Workers | CI（`.github/workflows/ci.yml`）の `deploy-cloudflare` ジョブ | 本番（`maguro-alternative.com`）。デプロイ後に `scripts/smoke.mjs` で本番を確認し、失敗したら直前の版へ自動でロールバックする |
+| Cloudflare Workers | Workers Builds（Cloudflare の Git 連携） | 本番（`maguro-alternative.com`）。デプロイコマンド `npm run deploy:ci` が本番を確認し、失敗したら直前の版へ自動でロールバックする |
 | Vercel | Vercel の Git 連携 | `*.vercel.app`。PR ごとにプレビューも作られる |
 
-CI のデプロイには GitHub の Secrets が要る（`CLOUDFLARE_API_TOKEN` は environment `cloudflare-production`、`CLOUDFLARE_ACCOUNT_ID` はリポジトリ）。
+Workers Builds の設定（ビルドコマンド `npm run build:cf`、デプロイコマンド `npm run deploy:ci`、Node は `.node-version`）は Cloudflare のダッシュボード側にある。GitHub にデプロイ用のトークンは置かない。
 
 ### 手動でデプロイする場合
 

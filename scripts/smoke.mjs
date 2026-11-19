@@ -44,13 +44,21 @@ async function waitForBuild(expected) {
   throw new Error(`本番が ${expected} を参照しない（新しい版に切り替わっていない）`)
 }
 
+// 1回の通信エラーで NG にすると、壊れていない版までロールバックしてしまう
 async function check(path, type) {
-  const res = await fetch(base + path, { redirect: 'manual' })
-  const actual = res.headers.get('content-type') ?? ''
-  if (res.status !== 200 || !actual.startsWith(type)) {
-    return `${path}: ${res.status} ${actual}（期待値 200 ${type}）`
+  let last = ''
+  for (let i = 0; i < 3; i++) {
+    if (i > 0) await sleep(2000)
+    try {
+      const res = await fetch(base + path, { redirect: 'manual' })
+      const actual = res.headers.get('content-type') ?? ''
+      if (res.status === 200 && actual.startsWith(type)) return null
+      last = `${res.status} ${actual}`
+    } catch (error) {
+      last = String(error)
+    }
   }
-  return null
+  return `${path}: ${last}（期待値 200 ${type}）`
 }
 
 if (manifestPath) {
@@ -60,7 +68,7 @@ if (manifestPath) {
   console.log(`build: /${entry.file}`)
 }
 
-const html = await fetch(base + '/').then((r) => r.text())
+const html = await fetch(base + '/').then((r) => r.text()).catch(() => '')
 const assets = [...new Set(html.match(/\/assets\/[^"]+\.(?:js|css)/g) ?? [])]
 const targets = [
   ...ROUTES,

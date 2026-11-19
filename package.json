@@ -14,7 +14,8 @@
     "preview": "npm run build:cf && wrangler dev",
     "deploy": "npm run build && vercel deploy --prebuilt --prod",
     "deploy:cf": "npm run build:cf && wrangler deploy",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "deploy:ci": "node scripts/deploy-ci.mjs"
   },
   "private": true,
   "dependencies": {
