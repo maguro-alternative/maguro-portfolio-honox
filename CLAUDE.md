@@ -75,6 +75,8 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev
 | 名前 | 用途 | 設定方法 |
 |------|------|----------|
 | `PRIVATE_PASSWORD` | プライベートブログの Basic 認証パスワード | `wrangler secret put PRIVATE_PASSWORD` |
+| `CLOUDFLARE_API_TOKEN` | CI の Cloudflare デプロイ | GitHub の environment `cloudflare-production` の secret（main のジョブからだけ読める）。リポジトリ全体の secret には置かない |
+| `CLOUDFLARE_ACCOUNT_ID` | CI の Cloudflare デプロイ | GitHub のリポジトリ secret |
 
 ## やってはいけないこと
 
