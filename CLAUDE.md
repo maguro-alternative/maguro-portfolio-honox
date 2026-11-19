@@ -23,7 +23,8 @@ npm run test       # Vitest（--watch は npm run test:watch）
 npm run build      # Vercel 向け 2段ビルド
 npm run deploy     # ビルド後 vercel deploy --prod
 npm run build:cf   # Cloudflare 向け 2段ビルド
-npm run deploy:cf  # ビルド後 wrangler deploy
+npm run deploy:cf  # ビルド後 wrangler deploy（通常は CI が main への push で実行する）
+npm run smoke -- <url> [manifest]  # 本番確認。manifest を渡すとそのビルドに切り替わるまで待つ
 npm run preview    # Cloudflare 向けビルド + wrangler dev
 ```
 
@@ -31,6 +32,7 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev
 
 - `vite.config.ts` はクライアントビルドとサーバービルドを `mode` で分岐している
 - サーバービルドのターゲットは `DEPLOY_TARGET` 環境変数で決まる（未指定 = `@hono/vite-build/vercel`、`cloudflare` = `@hono/vite-build/cloudflare-workers`）。クライアント成果物は共通で `dist/` に出す（honox が `/dist/.vite/manifest.json` を決め打ちで読むため、この出力先は変更しない）
+- デプロイは、Vercel が Git 連携で、Cloudflare が CI の `deploy-cloudflare` ジョブで、どちらも main への push で走る。Cloudflare 側は `scripts/smoke.mjs` で本番を確認し、失敗したらデプロイ前の版へ `wrangler rollback` する。確認するルートを増やしたら `smoke.mjs` の `ROUTES` も直す
 - Cloudflare 版では `dist/` をそのまま静的アセットとして配信するので、Worker 本体（`dist/index.js`）と manifest は `build:cf` が生成する `dist/.assetsignore` で除外する
 - ランタイム非依存を保つこと（`node:*` や `fs` を使わない。記事読み込みは `import.meta.glob`、外部取得は `fetch`）
 - 依存の向きは `app/lib/` → `app/features/` → `app/islands/` の一方通行。逆流は ESLint が弾く
