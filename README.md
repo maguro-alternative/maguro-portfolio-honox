@@ -5,7 +5,7 @@ maguro-alternative のポートフォリオサイト。HonoX 製で、Vercel と
 ## Tech Stack
 
 - **Framework**: [HonoX](https://github.com/honojs/honox)
-- **Runtime**: Vercel Functions（本番） / Cloudflare Workers
+- **Runtime**: Cloudflare Workers（本番、`maguro-alternative.com`） / Vercel Functions
 - **Styling**: Tailwind CSS v4
 - **Storage**: Cloudflare R2（プライベートブログ記事）
 
@@ -21,6 +21,7 @@ npm run deploy     # ビルド + Vercel にデプロイ
 npm run build:cf   # Cloudflare Workers 向けビルド
 npm run deploy:cf  # ビルド + wrangler deploy
 npm run preview    # Cloudflare 向けビルド + wrangler dev でローカルプレビュー
+npm run smoke -- <url> [manifest]  # デプロイ後の本番確認
 ```
 
 デプロイ先は環境変数 `DEPLOY_TARGET` で切り替わる（未指定 = Vercel、`cloudflare` = Workers）。
@@ -28,16 +29,20 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev でローカル�
 
 ## Deploy
 
-**手動デプロイのみ。** push しても何も起きない。
+**main への push で両方に自動デプロイされる。** PR ではデプロイされない（Vercel のプレビューだけ作られる）。
 
-| 環境 | コマンド | 備考 |
-|------|----------|------|
-| Cloudflare Workers | `npm run deploy:cf` | 本番（`maguro-alternative.com`） |
-| Vercel | `npm run deploy` | プレビュー用 |
+| 環境 | 仕組み | 備考 |
+|------|--------|------|
+| Cloudflare Workers | Workers Builds（Cloudflare の Git 連携） | 本番（`maguro-alternative.com`）。デプロイコマンド `npm run deploy:ci` が本番を確認し、失敗したら直前の版へ自動でロールバックする |
+| Vercel | Vercel の Git 連携 | `*.vercel.app`。PR ごとにプレビューも作られる |
 
-初回は `wrangler login` が必要。Node は `engines` と `.npmrc` の `engine-strict=true` により
-22.x に固定されているので、22 系で実行すること（Vercel CLI は新しい Node だと依存の
-engine チェックで弾かれる）。
+Workers Builds の設定（ビルドコマンド `npm run build:cf`、デプロイコマンド `npm run deploy:ci`、Node は `.node-version`）は Cloudflare のダッシュボード側にある。GitHub にデプロイ用のトークンは置かない。
+
+### 手動でデプロイする場合
+
+`npm run deploy:cf`（Cloudflare）、`npm run deploy`（Vercel）。初回は `wrangler login` が必要。
+Node は `engines` と `.npmrc` の `engine-strict=true` により 22.x に固定されているので、22 系で実行すること
+（Vercel CLI は新しい Node だと依存の engine チェックで弾かれる）。
 
 ## Blog System
 

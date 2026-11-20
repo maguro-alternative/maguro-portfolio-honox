@@ -10,6 +10,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# 依存パッケージに乗っ取られた場合に GITHUB_TOKEN でリポジトリを書き換えられないようにする
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-latest
