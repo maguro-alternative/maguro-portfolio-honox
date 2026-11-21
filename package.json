@@ -15,7 +15,8 @@
     "deploy": "npm run build && vercel deploy --prebuilt --prod",
     "deploy:cf": "npm run build:cf && wrangler deploy",
     "smoke": "node scripts/smoke.mjs",
-    "deploy:ci": "node scripts/deploy-ci.mjs"
+    "deploy:ci": "node scripts/deploy-ci.mjs",
+    "test:e2e": "playwright test"
   },
   "private": true,
   "dependencies": {
@@ -36,6 +37,7 @@
     "@eslint/js": "^10.0.1",
     "@hono/vite-build": "^1.3.0",
     "@hono/vite-dev-server": "^0.26.1",
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/vite": "^4.1.11",
     "@types/node": "^24.3.0",
     "eslint": "^10.8.1",

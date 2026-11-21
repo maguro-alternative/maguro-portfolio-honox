@@ -43,3 +43,32 @@ jobs:
 
       - name: Build (Cloudflare)
         run: npm run build:cf
+
+      # 本番と同じ成果物を起動して確かめる。typecheck やビルドが通っても、
+      # 配信やハイドレーションで壊れていることがあるため
+      - name: Start Worker (wrangler dev)
+        run: |
+          npx wrangler dev --port 8787 > wrangler-dev.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:8787/ && exit 0; sleep 1; done
+          cat wrangler-dev.log
+          exit 1
+
+      - name: Smoke test
+        run: npm run smoke -- http://localhost:8787 dist/.vite/manifest.json
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E test
+        run: npm run test:e2e
+
+      - name: Upload E2E report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            playwright-report
+            test-results
+            wrangler-dev.log
+          retention-days: 7
