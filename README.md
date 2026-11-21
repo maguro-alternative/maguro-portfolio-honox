@@ -39,6 +39,10 @@ npm run test:e2e   # Playwright の E2E（先に npm run build:cf）
 
 Workers Builds の設定（ビルドコマンド `npm run build:cf`、デプロイコマンド `npm run deploy:ci`、Node は `.node-version`）は Cloudflare のダッシュボード側にある。GitHub にデプロイ用のトークンは置かない。
 
+### 依存の更新
+
+Dependabot が PR を作る（バージョン更新は週1回、公開から3日以上経った版だけ。セキュリティ更新は随時）。パッチ・マイナーは CI が通れば自動で merge され、そのままデプロイされる。メジャーは自動 merge しないので、内容を見て merge する。
+
 ### 手動でデプロイする場合
 
 `npm run deploy:cf`（Cloudflare）、`npm run deploy`（Vercel）。初回は `wrangler login` が必要。
