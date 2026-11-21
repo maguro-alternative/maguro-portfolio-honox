@@ -20,6 +20,7 @@ npm run check      # typecheck + lint + test（push 前にこれ）
 npm run typecheck  # tsc --noEmit
 npm run lint       # ESLint（--fix は npm run lint:fix）
 npm run test       # Vitest（--watch は npm run test:watch）
+npm run test:e2e   # Playwright。先に npm run build:cf が要る（wrangler dev で成果物を起動して叩く）
 npm run build      # Vercel 向け 2段ビルド
 npm run deploy     # ビルド後 vercel deploy --prod
 npm run build:cf   # Cloudflare 向け 2段ビルド
@@ -39,7 +40,7 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev
 - ランタイム非依存を保つこと（`node:*` や `fs` を使わない。記事読み込みは `import.meta.glob`、外部取得は `fetch`）
 - 依存の向きは `app/lib/` → `app/features/` → `app/islands/` の一方通行。逆流は ESLint が弾く
 - 上記のルール（ランタイム非依存・フックの置き場所・依存の向き・Tailwind の動的クラス）は `eslint.config.js` で機械的に検査している。ルールを変えるときは設定も直す。自作ルールは `eslint-rules/` に置き、必ず `RuleTester` のテストを添える
-- テストは対象ファイルの隣に `*.test.ts` で置く。設定は `vitest.config.ts`（`vite.config.ts` は honox と build プラグインを積んでいてテストに使えないので分けてある）
+- テストは対象ファイルの隣に `*.test.ts` で置く。画面操作の E2E だけは `e2e/*.spec.ts` に置き、Playwright で `build:cf` の成果物を相手にする（CI の `check` ジョブで smoke と一緒に走る）。外部サイトの画像と iframe は `e2e/fixtures.ts` で差し替え・遮断しているので、外部に依存するテストを足すときはそこを通す。ルートやツールを増やしたら `e2e/` と `scripts/smoke.mjs` の両方に足す。設定は `vitest.config.ts`（`vite.config.ts` は honox と build プラグインを積んでいてテストに使えないので分けてある）
 - `renderTalk.ts` / `renderShinomasTalk.ts` は、実測値を REF_W 基準の比率で持ち、`unit(W)` を掛けてキャンバス座標にする。**ローカル変数は必ず px 空間（`* u` 済み）に揃えること**。REF 空間のまま持ち回ると、離れた場所で掛け忘れ・二重掛けが起きる。例外は `r / BTN_R` のような px÷REF の無次元スケール係数
 - 用途の違う string は `app/lib/brand.ts` のブランド型で区別する（`ProxiedUrl` / `SourceUrl` / `CharacterSlug` / `EmblemId` / `LogoId`）。値を作れるのは各モジュールの生成関数だけで、呼び出し側で `as` を書かない
 - Cloudflare Bindings（R2 等）は `c.env` 経由でアクセスする。型は `wrangler types` で生成した `worker-configuration.d.ts` を使う

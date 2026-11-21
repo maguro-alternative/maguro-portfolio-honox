@@ -144,7 +144,7 @@ export default tseslint.config(
 
   // --- 型定義とビルド設定は Node 前提 ---
   {
-    files: ['**/*.d.ts', 'vite.config.ts', 'scripts/**', '*.config.{js,ts}'],
+    files: ['**/*.d.ts', 'vite.config.ts', 'scripts/**', 'e2e/**', '*.config.{js,ts}'],
     rules: {
       'no-restricted-imports': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',

@@ -36,3 +36,7 @@ lerna-debug.log*
 
 # backup files
 *.bak
+
+# e2e
+test-results/
+playwright-report/
