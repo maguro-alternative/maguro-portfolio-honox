@@ -22,6 +22,7 @@ npm run build:cf   # Cloudflare Workers 向けビルド
 npm run deploy:cf  # ビルド + wrangler deploy
 npm run preview    # Cloudflare 向けビルド + wrangler dev でローカルプレビュー
 npm run smoke -- <url> [manifest]  # デプロイ後の本番確認
+npm run test:e2e   # Playwright の E2E（先に npm run build:cf）
 ```
 
 デプロイ先は環境変数 `DEPLOY_TARGET` で切り替わる（未指定 = Vercel、`cloudflare` = Workers）。
