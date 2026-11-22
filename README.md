@@ -41,7 +41,9 @@ Workers Builds の設定（ビルドコマンド `npm run build:cf`、デプロ�
 
 ### 依存の更新
 
-Dependabot が PR を作る（バージョン更新は週1回、公開から3日以上経った版だけ。セキュリティ更新は随時）。パッチ・マイナーは CI が通れば自動で merge され、そのままデプロイされる。メジャーは自動 merge しないので、内容を見て merge する。
+Dependabot が PR を作る（バージョン更新は週1回、公開から3日以上経った版だけ。セキュリティ更新は随時）。PR ごとに、機械的なサプライチェーンのチェックと Claude のレビューが走り、結果が PR にコメントされる。パッチ・マイナーで、危険信号がなく、Claude が承認したものは、CI が通れば自動で merge され、そのままデプロイされる。それ以外は `needs-review` ラベルが付くので、コメントの理由を見て判断する。
+
+Claude の認証には、Dependabot の Secrets に `ANTHROPIC_API_KEY` か `CLAUDE_CODE_OAUTH_TOKEN` が要る（Actions の Secrets では Dependabot の PR から読めない）。
 
 ### 手動でデプロイする場合
 
