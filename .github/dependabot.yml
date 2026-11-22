@@ -1,0 +1,28 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # 公開直後の版は入れない（.npmrc の min-release-age と同じ考え方）。
+    # 乗っ取られた版は数日以内に取り下げられることが多いため。セキュリティ更新には効かない
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
+    groups:
+      # パッチとマイナーは1つの PR にまとめる。依存ごとに PR が立つと、自動 merge の
+      # たびに main が動いて Workers Builds のデプロイが何度も走るため
+      minor-and-patch:
+        applies-to: version-updates
+        update-types: [minor, patch]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
+    groups:
+      actions:
+        patterns: ['*']

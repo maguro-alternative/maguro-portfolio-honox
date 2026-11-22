@@ -39,6 +39,12 @@ npm run test:e2e   # Playwright の E2E（先に npm run build:cf）
 
 Workers Builds の設定（ビルドコマンド `npm run build:cf`、デプロイコマンド `npm run deploy:ci`、Node は `.node-version`）は Cloudflare のダッシュボード側にある。GitHub にデプロイ用のトークンは置かない。
 
+### 依存の更新
+
+Dependabot が PR を作る（バージョン更新は週1回、公開から3日以上経った版だけ。セキュリティ更新は随時）。PR ごとに、機械的なサプライチェーンのチェックと Claude のレビューが走り、結果が PR にコメントされる。パッチ・マイナーで、危険信号がなく、Claude が承認したものは、CI が通れば自動で merge され、そのままデプロイされる。それ以外は `needs-review` ラベルが付くので、コメントの理由を見て判断する。
+
+Claude の認証には、Dependabot の Secrets に `ANTHROPIC_API_KEY` か `CLAUDE_CODE_OAUTH_TOKEN` が要る（Actions の Secrets では Dependabot の PR から読めない）。
+
 ### 手動でデプロイする場合
 
 `npm run deploy:cf`（Cloudflare）、`npm run deploy`（Vercel）。初回は `wrangler login` が必要。

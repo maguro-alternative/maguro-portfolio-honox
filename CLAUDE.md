@@ -35,6 +35,7 @@ npm run preview    # Cloudflare 向けビルド + wrangler dev
 - `vite.config.ts` はクライアントビルドとサーバービルドを `mode` で分岐している
 - サーバービルドのターゲットは `DEPLOY_TARGET` 環境変数で決まる（未指定 = `@hono/vite-build/vercel`、`cloudflare` = `@hono/vite-build/cloudflare-workers`）。クライアント成果物は共通で `dist/` に出す（honox が `/dist/.vite/manifest.json` を決め打ちで読むため、この出力先は変更しない）
 - デプロイは、Vercel も Cloudflare もそれぞれの Git 連携（Cloudflare は Workers Builds）で、main への push で走る。GitHub Actions はデプロイしない。Workers Builds の設定（ビルドコマンド `npm run build:cf`、デプロイコマンド `npm run deploy:ci`）はリポジトリの外、Cloudflare 側にある。`deploy:ci` は `scripts/smoke.mjs` で本番を確認し、失敗したらデプロイ前の版へ `wrangler rollback` してビルドを失敗させる。確認するルートを増やしたら `smoke.mjs` の `ROUTES` も直す
+- 依存更新は Dependabot（`.github/dependabot.yml`）が PR を作る（バージョン更新は週1回、セキュリティ更新は cooldown なしで随時）。`dependabot-review.yml` が、機械的なチェック（`scripts/inspect-dep-update.mjs` と `npm audit signatures`）→ Claude のレビュー → 判定 の順に通し、パッチ・マイナーで、危険信号がなく、Claude が approve したものだけ auto-merge する（`check` が通ってから merge → デプロイ）。それ以外は `needs-review` ラベルが付き、理由がコメントされる。機械的なチェックの危険信号は Claude の判断で覆らないようにしてある（README などに仕込まれた指示でだまされるため）。ジョブごとに権限を分けてあり、Claude や依存のコードが動くジョブに書き込み権限を渡さないこと
 - Workers Builds は `.node-version` で Node を決める。`engines` を変えたらこちらも直す
 - Cloudflare 版では `dist/` をそのまま静的アセットとして配信するので、Worker 本体（`dist/index.js`）と manifest は `build:cf` が生成する `dist/.assetsignore` で除外する
 - ランタイム非依存を保つこと（`node:*` や `fs` を使わない。記事読み込みは `import.meta.glob`、外部取得は `fetch`）
